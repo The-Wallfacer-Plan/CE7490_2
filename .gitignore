@@ -114,4 +114,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 
-/materials/
+/experiments/
+/RAID*/
+/file*.dat
