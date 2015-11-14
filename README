@@ -1,0 +1,21 @@
+data file types:
+- text
+- binary
+- size
+
+operations:
+- read
+- write
+
+predefined:
+- dir locations (abstract nodes)
+- N stripes + 2 parities
+
+requirements:
+- find which disk is corrupted
+- recover 2-disk case
+- s kb files (10<s<=100)
+- mutable files
+
+evaluation
+- comparison with RAID5

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 
 # Copyright Emin Martinian 2002.  See below for license terms.
 # Version Control Info: $Id: ffield.py,v 1.5 2007/03/15 02:49:44 emin Exp $
