@@ -25,8 +25,8 @@ def starter():
         os.mkdir(config.root)
     r4 = RAID4(config.N)
     r6 = RAID6(config.N)
-    gen_rnd_file('data1', 16, 'text')
-    gen_rnd_file('data2', 16, 'bin')
+    gen_rnd_file('data1', 19, 'text')
+    gen_rnd_file('data2', 21, 'bin')
 
 
 if __name__ == '__main__':
