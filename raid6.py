@@ -10,7 +10,7 @@ class RAID6(RAID):
     def check(self, byte_nparray):
         pass
 
-    def read(self, fname):
+    def read(self, fname, size):
         pass
 
     def write(self, content, fname):

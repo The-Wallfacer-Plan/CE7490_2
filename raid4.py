@@ -21,7 +21,7 @@ class RAID4(RAID):
             msg = 'xor of arrays not all zeros, res={}'.format(res)
             raise utils.ParityCheckError(msg)
 
-    def read(self, fname):
+    def read(self, fname, size):
         content_list = []
         for i in xrange(self.N):
             fpath = self.get_real_name(i, fname)
@@ -31,14 +31,15 @@ class RAID4(RAID):
         # list of bytes (int) list
         byte_list = []
         for content in content_list:
-            current_str_list = [ord(s) for s in content] + [self.EOF] * (length - len(content))
+            current_str_list = [ord(s) for s in content] + [self.ZERO] * (length - len(content))
             byte_list.append(current_str_list)
         # bytes array
         byte_nparray = np.array(byte_list, dtype=self.BYTE_TYPE)
         self.check(byte_nparray)
         # read N-1
         data_nparray = byte_nparray[:-1]
-        flat_list = filter(lambda ele: ele != self.EOF, data_nparray.ravel(1))
+        flat_list = data_nparray.ravel(1)[:size]
+        # flat_list = filter(lambda ele: ele != self.ZERO, data_nparray.ravel(1))
         flat_str_list = [chr(e) for e in flat_list]
         return ''.join(flat_str_list)
 
@@ -52,7 +53,7 @@ class RAID4(RAID):
         length = len(sorted(content_list, key=len, reverse=True)[0])
         # fill 0
         for content in content_list:
-            current_str_list = [ord(s) for s in content] + [self.EOF] * (length - len(content))
+            current_str_list = [ord(s) for s in content] + [self.ZERO] * (length - len(content))
             byte_list.append(current_str_list)
         byte_nparray = np.array(byte_list, dtype=self.BYTE_TYPE)
         get_logger().info('byte_array'.format(byte_nparray))
@@ -78,8 +79,9 @@ if __name__ == '__main__':
     r4 = RAID4(4)
     data_fname = 'good.dat'
     # original_content = 'good_morning_sir'
-    original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10'
+    original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
+    size = len(original_content)
     r4.write(original_content, data_fname)
-    r4_content = r4.read(data_fname)
+    r4_content = r4.read(data_fname, size)
     print(r4_content.__repr__())
     assert r4_content == original_content

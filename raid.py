@@ -6,14 +6,13 @@ import numpy as np
 import config
 import utils
 
-MAX_SIZE = 10
-
 
 # noinspection PyPep8Naming
 class RAID(object):
     def __init__(self, N):
         self.BYTE_TYPE = np.int
         self.EOF = -1
+        self.ZERO = 0
         self.N = N
         self.disk_path = os.path.join(config.root, self.__class__.__name__)
         self.data = [None] * N
@@ -39,7 +38,7 @@ class RAID(object):
     def check(self, byte_nparray):
         raise NotImplementedError
 
-    def read(self, fname):
+    def read(self, fname, size):
         raise NotImplementedError
 
     def write(self, content, fname):

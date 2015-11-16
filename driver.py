@@ -43,9 +43,10 @@ if __name__ == '__main__':
     fpath = os.path.join(config.root, fname)
     with open(fpath, 'rb') as fh:
         content = fh.read()
-    r4 = RAID4(3)
+    r4 = RAID4(4)
     r4.write(content, fname)
-    content_r4 = r4.read(fname)
+    size = len(content)
+    content_r4 = r4.read(fname, size)
     assert content == content_r4
     # counter = 0
     # for original, new in zip(content, content_r4):
