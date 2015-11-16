@@ -11,5 +11,10 @@ def init_disks(root_path, N):
     for i in xrange(N):
         fname = config.disk_prefix + str(i)
         fpath = os.path.join(root_path, fname)
-        if not os.path.isfile(fpath):
+        if not os.path.isdir(fpath):
             os.mkdir(fpath)
+
+
+class ParityCheckError(Exception):
+    def __init__(self, msg):
+        super(ParityCheckError, self).__init__(msg)

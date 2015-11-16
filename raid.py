@@ -27,38 +27,16 @@ class RAID(object):
                     raise StopIteration
                 yield chunk
 
-    def contents(self, fpath):
-        b = b''
+    @staticmethod
+    def _contents(fpath):
+        with open(fpath, 'rb') as fh:
+            return fh.read()
+
+    def check(self, byte_nparray):
+        raise NotImplementedError
 
     def read(self, fname):
         raise NotImplementedError
 
-    def write(self, fname):
+    def write(self, content, fname):
         raise NotImplementedError
-
-
-# noinspection PyPep8Naming
-class RAID4(RAID):
-    def __init__(self, N):
-        super(RAID4, self).__init__(N)
-
-    def read(self, fname):
-        for i in xrange(self.N):
-            fpath = self.get_real_name(i, fname)
-            with open(fpath, 'rb') as fh:
-                pass
-
-    def write(self, fname):
-        pass
-
-
-# noinspection PyPep8Naming
-class RAID6(RAID):
-    def __init__(self, N):
-        super(RAID6, self).__init__(N)
-
-    def read(self, fname):
-        pass
-
-    def write(self, fname):
-        pass

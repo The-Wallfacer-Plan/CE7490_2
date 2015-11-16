@@ -5,7 +5,8 @@ import random
 import string
 
 import config
-from raid import RAID4, RAID6
+from raid4 import RAID4
+from raid6 import RAID6
 
 
 def gen_rnd_file(fname, size, content_type):
@@ -31,3 +32,11 @@ def starter():
 
 if __name__ == '__main__':
     starter()
+    fname = 'data1'
+    fpath = os.path.join(config.root, fname)
+    with open(fpath, 'rb') as fh:
+        content = fh.read()
+    r4 = RAID4(3)
+    r4.write(content, fname)
+    content_r4 = r4.read(fname)
+    print(content, content_r4)
