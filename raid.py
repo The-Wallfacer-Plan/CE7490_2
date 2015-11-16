@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 
+import numpy as np
+
 import config
 import utils
 
@@ -10,6 +12,8 @@ MAX_SIZE = 10
 # noinspection PyPep8Naming
 class RAID(object):
     def __init__(self, N):
+        self.BYTE_TYPE = np.int
+        self.EOF = -1
         self.N = N
         self.disk_path = os.path.join(config.root, self.__class__.__name__)
         self.data = [None] * N
