@@ -3,6 +3,7 @@
 K = 6
 M = 2
 N = K + M
+N = 4
 
 root = 'experiments'
 disk_prefix = 'D'

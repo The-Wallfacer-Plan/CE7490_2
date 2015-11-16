@@ -7,6 +7,7 @@ import string
 import config
 from log_helper import get_logger, init_logger
 from raid4 import RAID4
+from raid5 import RAID5
 from raid6 import RAID6
 
 
@@ -31,6 +32,7 @@ def starter():
     if not os.path.isdir(config.root):
         os.mkdir(config.root)
     r4 = RAID4(config.N)
+    r5 = RAID4(config.N)
     r6 = RAID6(config.N)
     gen_rnd_file('data1', SIZE, 'text')
     gen_rnd_file('data2', SIZE, 'bin')
@@ -45,8 +47,10 @@ if __name__ == '__main__':
         fpath = os.path.join(config.root, fname)
         with open(fpath, 'rb') as fh:
             content = fh.read()
-        r4 = RAID4(4)
-        r4.write(content, fname)
+        raid = RAID5(4)
+        raid.write(content, fname)
         size = len(content)
-        content_r4 = r4.read(fname, size)
-        assert content == content_r4
+        content_raid = raid.read(fname, size)
+        assert content == content_raid
+        error_index = 2
+        raid.recover(fname, error_index)
