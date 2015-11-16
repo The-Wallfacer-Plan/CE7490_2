@@ -1,0 +1,34 @@
+version: 1
+
+formatters:
+  trackerFormatter:
+    format: '%(levelname)9s %(asctime)s %(filename)25s:%(lineno)3s - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+  simpleFormatter:
+#    format: '%(asctime)s  %(message)s'
+    format: '%(levelname)9s %(asctime)s %(filename)15s:%(lineno)3s - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: simpleFormatter
+    level: WARNING
+    stream: ext://sys.stdout
+  tracker_file:
+    class: logging.FileHandler
+    formatter: trackerFormatter
+    level: DEBUG
+    filename: tracker.log
+
+
+
+loggers:
+  logger:
+    level: DEBUG
+    handlers: [tracker_file]
+    propagate: yes
+
+root:
+  level: DEBUG
+  handlers: [console]

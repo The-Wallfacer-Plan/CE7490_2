@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 from itertools import repeat
 
 import numpy as np
 
 import utils
+from log_helper import init_logger, get_logger
 from raid import RAID
 
 
@@ -34,43 +37,48 @@ class RAID4(RAID):
         # bytes array
         byte_nparray = np.array(byte_list, dtype=self.BYTE_TYPE)
         self.check(byte_nparray)
+        # read N-1
         data_nparray = byte_nparray[:-1]
         flat_list = filter(lambda ele: ele != 0, data_nparray.ravel(1))
         flat_str_list = [chr(e) for e in flat_list]
         return ''.join(flat_str_list)
 
     def write(self, content, fname):
+        # select N-1 disks
         content_list = [[] for i in repeat(None, self.N - 1)]
         for i in xrange(len(content)):
             mod_i = i % (self.N - 1)
             content_list[mod_i].append(content[i])
         byte_list = []
         length = len(sorted(content_list, key=len, reverse=True)[0])
+        # fill 0
         for content in content_list:
             current_str_list = [ord(s) for s in content] + [0] * (length - len(content))
             byte_list.append(current_str_list)
         byte_nparray = np.array(byte_list, dtype=self.BYTE_TYPE)
-        print(byte_nparray)
+        get_logger().info(byte_nparray)
+        # calculate parity and append
         parity = np.bitwise_xor.reduce(byte_nparray)
         assert parity.ndim == 1
         new_dim = parity.shape[0]
         parity.shape = (1, new_dim)
         final_ndarray = np.concatenate([byte_nparray, parity])
-        print(final_ndarray)
+        get_logger().info(final_ndarray)
+        # write N
         for j in range(self.N):
             fpath = self.get_real_name(j, fname)
             str_list = [chr(b) for b in final_ndarray[j]]
             content_i = ''.join(str_list)
-            # print(content_i)
             with open(fpath, 'wb') as fh:
                 fh.write(content_i)
 
 
 if __name__ == '__main__':
+    init_logger()
     r4 = RAID4(4)
     data_fname = 'good.dat'
-    original_content = 'good_morning'
-    # original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c'
+    # original_content = 'good_morning_sir'
+    original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10'
     r4.write(original_content, data_fname)
     r4_content = r4.read(data_fname)
     print(r4_content.__repr__())
