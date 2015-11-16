@@ -4,7 +4,7 @@ from __future__ import print_function
 import numpy as np
 
 import utils
-from log_helper import init_logger
+from log_helper import init_logger, get_logger
 from raid import RAID
 
 
@@ -20,11 +20,11 @@ class RAID4(RAID):
             raise utils.ParityCheckError(msg)
 
     def read(self, fname, size):
-        byte_nparray = self._read_n(fname)
+        byte_ndarray = self._read_n(fname)
         # check
-        self._check(byte_nparray)
+        self._check(byte_ndarray)
         # get N-1
-        data_nparray = byte_nparray[:-1]
+        data_nparray = byte_ndarray[:-1]
         flat_list = data_nparray.ravel(1)[:size]
         flat_str_list = [chr(e) for e in flat_list]
         return ''.join(flat_str_list)
@@ -42,15 +42,16 @@ class RAID4(RAID):
         read_ndarray = self._read_n(fname)
         self._check(read_ndarray)
 
-    def write(self, content, fname):
-        byte_nparray = self._gen_ndarray_from_content(content)
+    def __gen_raid_array(self, byte_ndarray):
         # calculate parity and append
-        parity = self._parity(byte_nparray)
-        # parity = np.bitwise_xor.reduce(byte_nparray)
-        # assert parity.ndim == 1
-        # new_num = parity.shape[0]
-        # parity.shape = (1, new_num)
-        write_array = np.concatenate([byte_nparray, parity])
+        parity = utils.parity(byte_ndarray)
+        write_array = np.concatenate([byte_ndarray, parity])
+        get_logger().warning('write_array=\n{}'.format(write_array))
+        return write_array
+
+    def write(self, content, fname):
+        byte_ndarray = self._gen_ndarray_from_content(content)
+        write_array = self.__gen_raid_array(byte_ndarray)
         self._write_n(fname, write_array)
 
 

@@ -102,14 +102,6 @@ class RAID(object):
             with open(fpath, 'wb') as fh:
                 fh.write(content_i)
 
-    @staticmethod
-    def _parity(byte_ndarray):
-        res = np.bitwise_xor.reduce(byte_ndarray)
-        assert res.ndim == 1
-        new_num = res.shape[0]
-        res.shape = (1, new_num)
-        return res
-
     def _check(self, byte_ndarray):
         raise NotImplementedError
 

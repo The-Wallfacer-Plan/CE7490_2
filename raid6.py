@@ -13,5 +13,8 @@ class RAID6(RAID):
     def read(self, fname, size):
         pass
 
+    def recover(self, fname, exclude):
+        pass
+
     def write(self, content, fname):
         pass
