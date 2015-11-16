@@ -15,8 +15,6 @@ def init_disks(root_path, N):
             os.mkdir(fpath)
 
 
-
-
 class ParityCheckError(Exception):
     def __init__(self, msg):
         super(ParityCheckError, self).__init__(msg)

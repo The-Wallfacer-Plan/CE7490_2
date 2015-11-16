@@ -7,7 +7,7 @@ class RAID6(RAID):
     def __init__(self, N):
         super(RAID6, self).__init__(N)
 
-    def check(self, byte_nparray):
+    def _check(self, byte_nparray):
         pass
 
     def read(self, fname, size):

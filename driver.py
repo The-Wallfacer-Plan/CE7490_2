@@ -39,7 +39,7 @@ def starter():
 if __name__ == '__main__':
     init_logger()
     starter()
-    fname = 'data2'
+    fname = 'data1'
     fpath = os.path.join(config.root, fname)
     with open(fpath, 'rb') as fh:
         content = fh.read()
