@@ -29,13 +29,27 @@ class RAID4(RAID):
         flat_str_list = [chr(e) for e in flat_list]
         return ''.join(flat_str_list)
 
+    def recover(self, fname, index):
+        assert 0 <= index < self.N
+        byte_ndarray = self._read_n(fname, exclude=index)
+        parity = np.bitwise_xor.reduce(byte_ndarray)
+        assert parity.ndim == 1
+        content = self._1darray_to_str(parity)
+        fpath = self.get_real_name(index, fname)
+        with open(fpath, 'wb') as fh:
+            fh.write(content)
+            # check
+        read_ndarray = self._read_n(fname)
+        self._check(read_ndarray)
+
     def write(self, content, fname):
         byte_nparray = self._gen_ndarray_from_content(content)
         # calculate parity and append
-        parity = np.bitwise_xor.reduce(byte_nparray)
-        assert parity.ndim == 1
-        new_num = parity.shape[0]
-        parity.shape = (1, new_num)
+        parity = self._parity(byte_nparray)
+        # parity = np.bitwise_xor.reduce(byte_nparray)
+        # assert parity.ndim == 1
+        # new_num = parity.shape[0]
+        # parity.shape = (1, new_num)
         write_array = np.concatenate([byte_nparray, parity])
         self._write_n(fname, write_array)
 
@@ -51,3 +65,5 @@ if __name__ == '__main__':
     r4_content = r4.read(data_fname, size)
     print(r4_content.__repr__())
     assert r4_content == original_content
+    error_index = 2
+    r4.recover(data_fname, error_index)

@@ -38,16 +38,23 @@ class RAID(object):
         with open(fpath, 'rb') as fh:
             return fh.read()
 
-    def _read_n(self, fname):
+    def _read_n(self, fname, **kwargs):
         """
         generate nparray with dtype=BYTE_TYPE
         :param fname:
         :return:
         """
         content_list = []
+        if 'exclude' in kwargs:
+            exclude = kwargs['exclude']
+        else:
+            exclude = None
         for i in xrange(self.N):
-            fpath = self.get_real_name(i, fname)
-            content_list.append(self._contents(fpath))
+            if i == exclude:
+                content_list.append(list())
+            else:
+                fpath = self.get_real_name(i, fname)
+                content_list.append(self._contents(fpath))
         get_logger().info(content_list)
         length = len(sorted(content_list, key=len, reverse=True)[0])
         # list of bytes (int) list
@@ -75,6 +82,11 @@ class RAID(object):
         get_logger().info('byte_array'.format(byte_nparray))
         return byte_nparray
 
+    def _1darray_to_str(self, _1darray):
+        real_write_content = filter(lambda b: b >= self.ZERO, _1darray)
+        str_list = [chr(b) for b in real_write_content]
+        return ''.join(str_list)
+
     def _write_n(self, fname, write_array):
         r"""
         doesn't care about trailing '\x0'
@@ -86,13 +98,22 @@ class RAID(object):
         # write N
         for j in range(self.N):
             fpath = self.get_real_name(j, fname)
-            real_write_content = filter(lambda b: b >= self.ZERO, write_array[j])
-            str_list = [chr(b) for b in real_write_content]
-            content_i = ''.join(str_list)
+            content_i = self._1darray_to_str(write_array[j])
             with open(fpath, 'wb') as fh:
                 fh.write(content_i)
 
-    def _check(self, byte_nparray):
+    @staticmethod
+    def _parity(byte_ndarray):
+        res = np.bitwise_xor.reduce(byte_ndarray)
+        assert res.ndim == 1
+        new_num = res.shape[0]
+        res.shape = (1, new_num)
+        return res
+
+    def _check(self, byte_ndarray):
+        raise NotImplementedError
+
+    def recover(self, fname, exclude):
         raise NotImplementedError
 
     def read(self, fname, size):

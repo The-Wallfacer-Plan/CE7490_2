@@ -41,17 +41,12 @@ SIZE = 4096
 if __name__ == '__main__':
     init_logger()
     starter()
-    fname = 'data1'
-    fpath = os.path.join(config.root, fname)
-    with open(fpath, 'rb') as fh:
-        content = fh.read()
-    r4 = RAID4(4)
-    r4.write(content, fname)
-    size = len(content)
-    content_r4 = r4.read(fname, size)
-    assert content == content_r4
-    # counter = 0
-    # for original, new in zip(content, content_r4):
-    #     if original != new:
-    #         print(original, new, counter)
-    #         break
+    for fname in ['data1', 'data2']:
+        fpath = os.path.join(config.root, fname)
+        with open(fpath, 'rb') as fh:
+            content = fh.read()
+        r4 = RAID4(4)
+        r4.write(content, fname)
+        size = len(content)
+        content_r4 = r4.read(fname, size)
+        assert content == content_r4
