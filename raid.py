@@ -38,7 +38,7 @@ class RAID(object):
         with open(fpath, 'rb') as fh:
             return fh.read()
 
-    def _read_n(self, fname, **kwargs):
+    def _read_n(self, fname, N, **kwargs):
         """
         generate nparray with dtype=BYTE_TYPE
         :param fname:
@@ -49,7 +49,7 @@ class RAID(object):
             exclude = kwargs['exclude']
         else:
             exclude = None
-        for i in xrange(self.N):
+        for i in xrange(N):
             if i == exclude:
                 content_list.append(list())
             else:
@@ -103,7 +103,7 @@ class RAID(object):
             with open(fpath, 'wb') as fh:
                 fh.write(content_i)
 
-    def _check(self, byte_ndarray):
+    def check(self, byte_ndarray):
         raise NotImplementedError
 
     def recover(self, fname, exclude):

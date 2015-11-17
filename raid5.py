@@ -4,7 +4,7 @@ import numpy as np
 
 # noinspection PyPep8Naming
 import utils
-from log_helper import init_logger, get_logger
+from log_helper import get_logger
 from raid4 import RAID4
 
 
@@ -31,8 +31,8 @@ class RAID5(RAID4):
         super(RAID5, self).__init__(N)
 
     def read(self, fname, size):
-        byte_ndarray = self._read_n(fname)
-        self._check(byte_ndarray)
+        byte_ndarray = self._read_n(fname, self.N)
+        self.check(byte_ndarray)
         assert byte_ndarray.ndim == 2
         assert byte_ndarray.shape[0] == self.N
         swapped = self.swap(byte_ndarray)
@@ -56,16 +56,4 @@ class RAID5(RAID4):
 
 
 if __name__ == '__main__':
-    init_logger()
-    init_logger()
-    r5 = RAID5(4)
-    data_fname = 'good.dat'
-    original_content = 'good_morning_sir'
-    # original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
-    size = len(original_content)
-    r5.write(original_content, data_fname)
-    r5_content = r5.read(data_fname, size)
-    print(r5_content.__repr__())
-    assert r5_content == original_content
-    error_index = 2
-    r5.recover(data_fname, error_index)
+    utils.test_once(RAID5)
