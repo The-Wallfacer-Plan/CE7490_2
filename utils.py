@@ -30,7 +30,7 @@ def check_data_p(byte_ndarray):
     res = np.bitwise_xor.reduce(byte_ndarray)
     if np.count_nonzero(res) != 0:
         msg = 'xor of arrays not all zeros, res={}'.format(res)
-        raise ParityCheckError(msg)
+        raise RAIDCheckError(msg)
 
 
 def simple_test(raid_level, test_recovery=True):
@@ -49,10 +49,6 @@ def simple_test(raid_level, test_recovery=True):
         raid.recover(data_fname, error_index)
 
 
-def check_q(data_ndarray, q_ndarray):
-    pass
-
-
 def gf(byte_ndarray):
     """
     :param byte_ndarray: the data ndarray
@@ -62,6 +58,13 @@ def gf(byte_ndarray):
     return arr
 
 
-class ParityCheckError(Exception):
+def check_q(data_ndarray, q_ndarray):
+    computed = gf(data_ndarray)
+    if not np.array_equal(computed, q_ndarray):
+        msg = 'Q check failed, q_ndarray={}, computed={}'.format(q_ndarray, computed)
+        raise RAIDCheckError(msg)
+
+
+class RAIDCheckError(Exception):
     def __init__(self, msg):
-        super(ParityCheckError, self).__init__(msg)
+        super(RAIDCheckError, self).__init__(msg)
