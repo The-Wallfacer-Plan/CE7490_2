@@ -23,8 +23,12 @@ def init_disks(root_path, N):
             os.mkdir(fpath)
 
 
-def parity(byte_ndarray):
-    res = np.bitwise_xor.reduce(byte_ndarray)
+def parity(data_ndarray):
+    """
+    :param data_ndarray: the data array
+    :return:
+    """
+    res = np.bitwise_xor.reduce(data_ndarray)
     assert res.ndim == 1
     new_num = res.shape[0]
     res.shape = (1, new_num)
@@ -60,8 +64,8 @@ def gf(data_ndarray):
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
     """
     transposed = np.transpose(data_ndarray)
-    print(data_ndarray.shape)
-    get_logger().warning('transposed\n{}'.format(transposed))
+    # print(data_ndarray.shape)
+    get_logger().info('transposed\n{}'.format(transposed))
     gf = GF()
     q_list = []
     for _1darray in transposed:

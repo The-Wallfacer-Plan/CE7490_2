@@ -50,7 +50,7 @@ class RAID(object):
         else:
             exclude = None
         for i in xrange(N):
-            if i == exclude:
+            if (isinstance(exclude, int) and i == exclude) or (isinstance(exclude, list) and i in exclude):
                 content_list.append(list())
             else:
                 fpath = self.get_real_name(i, fname)
