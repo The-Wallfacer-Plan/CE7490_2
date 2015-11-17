@@ -2,6 +2,7 @@
 import numpy as np
 
 import utils
+from log_helper import init_logger
 from raid import RAID
 
 
@@ -105,8 +106,11 @@ class RAID6(RAID):
 
 
 if __name__ == '__main__':
-    utils.simple_test(RAID6, False)
+    # utils.simple_test(RAID6, False)
+    init_logger()
     r6 = RAID6(4)
-    error_index = 0
+    # error_index = 0
+    original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
     data_fname = 'good.dat'
-    r6.recover_d_or_p(data_fname, error_index)
+    r6.write(original_content, data_fname)
+    # r6.recover_d_or_p(data_fname, error_index)

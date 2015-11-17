@@ -2,10 +2,12 @@
 import os
 
 import numpy as np
+from BitVector import BitVector
 
 import config
 # noinspection PyPep8Naming
-from log_helper import init_logger
+from galois import GF
+from log_helper import init_logger, get_logger
 
 
 def init_disks(root_path, N):
@@ -54,6 +56,16 @@ def gf(byte_ndarray):
     :param byte_ndarray: the data ndarray
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
     """
+    transposed = np.transpose(byte_ndarray)
+    gf = GF()
+    for _1darray in transposed:
+        bv_list = []
+        for i, arr_val in enumerate(_1darray):
+            res_i = gf.multiply(gf.generator[i % gf.circle], BitVector(intVal=arr_val))
+            bv_list.append(res_i)
+        
+
+    get_logger().warning('transposed\n{}'.format(transposed))
     arr = np.zeros((1, byte_ndarray.shape[1]), byte_ndarray.dtype)
     return arr
 

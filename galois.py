@@ -19,6 +19,9 @@ class GF(object):
         if 'generator' not in self.__dict__:
             self.init_generator()
 
+    def multiply(self, first, second):
+        return first.gf_multiply_modular(second, self.modulus, self.N)
+
     def init_generator(self):
         get_logger().info('init generator')
         self.generator = []
@@ -31,7 +34,7 @@ class GF(object):
             counter += 1
             if counter >= self.circle:
                 break
-            res = res.gf_multiply_modular(base, self.modulus, self.N)
+            res = self.multiply(res, base)
         assert len(set(self.generator)) == self.circle
 
     @staticmethod
