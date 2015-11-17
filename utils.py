@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
+import operator
 import os
 
 import numpy as np
@@ -57,16 +60,22 @@ def gf(byte_ndarray):
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
     """
     transposed = np.transpose(byte_ndarray)
+    print(byte_ndarray.shape)
+    get_logger().warning('transposed\n{}'.format(transposed))
     gf = GF()
+    q_list = []
     for _1darray in transposed:
         bv_list = []
         for i, arr_val in enumerate(_1darray):
             res_i = gf.multiply(gf.generator[i % gf.circle], BitVector(intVal=arr_val))
+            # print('i={}, arr_val={}, res_i={}'.format(i, arr_val, res_i))
             bv_list.append(res_i)
-        
-
-    get_logger().warning('transposed\n{}'.format(transposed))
-    arr = np.zeros((1, byte_ndarray.shape[1]), byte_ndarray.dtype)
+            # map(lambda i: print(i), bv_list)
+        q_value = reduce(operator.xor, bv_list).int_val()
+        q_list.append(q_value)
+    arr = np.array(q_list, ndmin=2)
+    assert arr.shape[1] == byte_ndarray.shape[1]
+    # arr = np.zeros((1, byte_ndarray.shape[1]), byte_ndarray.dtype)
     return arr
 
 
