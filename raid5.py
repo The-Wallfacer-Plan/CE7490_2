@@ -14,9 +14,6 @@ class RAID5(RAID4):
     _check and recover is same as RAID4
     """
 
-    def is_data_node(self, i, j):
-        return (i + j + 1) % self.N != 0
-
     def get_parity_index(self, i):
         return (3 - i) % self.N
 
@@ -30,6 +27,7 @@ class RAID5(RAID4):
         return byte_ndarray
 
     def __init__(self, N):
+        assert 3 <= N
         super(RAID5, self).__init__(N)
 
     def read(self, fname, size):

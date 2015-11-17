@@ -13,8 +13,8 @@ class RAID4(RAID):
     def __init__(self, N):
         super(RAID4, self).__init__(N)
 
-    def _check(self, byte_nparray):
-        res = np.bitwise_xor.reduce(byte_nparray)
+    def _check(self, byte_ndarray):
+        res = np.bitwise_xor.reduce(byte_ndarray)
         if np.count_nonzero(res) != 0:
             msg = 'xor of arrays not all zeros, res={}'.format(res)
             raise utils.ParityCheckError(msg)

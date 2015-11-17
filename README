@@ -1,11 +1,11 @@
 data file types:
 - text
 - binary
-- size
 
 operations:
 - read
 - write
+- recover
 
 predefined:
 - dir locations (abstract nodes)
@@ -22,4 +22,4 @@ evaluation
 
 TODO:
 - unittest
-- should not be file with name; but specify size
+- specify size
