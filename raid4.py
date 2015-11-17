@@ -14,7 +14,7 @@ class RAID4(RAID):
         super(RAID4, self).__init__(N)
 
     def check(self, byte_ndarray):
-        utils.check_p(byte_ndarray)
+        utils.check_data_p(byte_ndarray)
 
     def read(self, fname, size):
         byte_ndarray = self._read_n(fname, self.N)
@@ -53,4 +53,4 @@ class RAID4(RAID):
 
 
 if __name__ == '__main__':
-    utils.test_once(RAID4)
+    utils.simple_test(RAID4)

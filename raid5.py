@@ -56,4 +56,4 @@ class RAID5(RAID4):
 
 
 if __name__ == '__main__':
-    utils.test_once(RAID5)
+    utils.simple_test(RAID5)

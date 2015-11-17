@@ -26,14 +26,14 @@ def parity(byte_ndarray):
     return res
 
 
-def check_p(byte_ndarray):
+def check_data_p(byte_ndarray):
     res = np.bitwise_xor.reduce(byte_ndarray)
     if np.count_nonzero(res) != 0:
         msg = 'xor of arrays not all zeros, res={}'.format(res)
         raise ParityCheckError(msg)
 
 
-def test_once(raid_level, test_recovery=True):
+def simple_test(raid_level, test_recovery=True):
     init_logger()
     raid = raid_level(4)
     data_fname = 'good.dat'
@@ -54,6 +54,10 @@ def check_q(data_ndarray, q_ndarray):
 
 
 def gf(byte_ndarray):
+    """
+    :param byte_ndarray: the data ndarray
+    :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
+    """
     arr = np.zeros((1, byte_ndarray.shape[1]), byte_ndarray.dtype)
     return arr
 
