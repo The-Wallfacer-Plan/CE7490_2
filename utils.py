@@ -54,13 +54,13 @@ def simple_test(raid_level, test_recovery=True):
         raid.recover(data_fname, error_index)
 
 
-def gf(byte_ndarray):
+def gf(data_ndarray):
     """
-    :param byte_ndarray: the data ndarray
+    :param data_ndarray: the data ndarray
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
     """
-    transposed = np.transpose(byte_ndarray)
-    print(byte_ndarray.shape)
+    transposed = np.transpose(data_ndarray)
+    print(data_ndarray.shape)
     get_logger().warning('transposed\n{}'.format(transposed))
     gf = GF()
     q_list = []
@@ -74,7 +74,7 @@ def gf(byte_ndarray):
         q_value = reduce(operator.xor, bv_list).int_val()
         q_list.append(q_value)
     arr = np.array(q_list, ndmin=2)
-    assert arr.shape[1] == byte_ndarray.shape[1]
+    assert arr.shape[1] == data_ndarray.shape[1]
     # arr = np.zeros((1, byte_ndarray.shape[1]), byte_ndarray.dtype)
     return arr
 

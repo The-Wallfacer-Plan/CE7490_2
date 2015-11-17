@@ -42,7 +42,7 @@ class RAID(object):
         """
         generate nparray with dtype=BYTE_TYPE
         :param fname:
-        :return:
+        :return: ndarray with shape=(n, length)
         """
         content_list = []
         if 'exclude' in kwargs:

@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import numpy as np
+from BitVector.BitVector import BitVector
 
 import utils
+from galois import GF
 from log_helper import init_logger
 from raid import RAID
 
@@ -13,6 +17,7 @@ class RAID6(RAID):
     def __init__(self, N):
         assert 4 <= N
         super(RAID6, self).__init__(N)
+        self.gf = GF()
 
     def check(self, byte_ndarray):
         # check p
@@ -89,6 +94,7 @@ class RAID6(RAID):
         """
         pass
 
+    # FIXME error
     def recover_d_p(self, fname, index):
         """
         recover data drive (index) and 'p' drive
@@ -96,6 +102,31 @@ class RAID6(RAID):
         :param index:
         :return:
         """
+        assert 0 <= index < self.N - 2
+        byte_ndarray = self._read_n(fname, self.N, exclude=index)
+        DD = byte_ndarray[:-2]
+        Q = byte_ndarray[-1:]
+        # Dx
+        Qx = utils.gf(DD)
+        g_x_inv = self.gf.generator[self.gf.circle - index]
+        _add_list = list((Q + Qx).ravel(1))
+        Dx_list = [self.gf.multiply(BitVector(intVal=i), g_x_inv).int_val() for i in _add_list]
+        Dx_content = ''.join(chr(i) for i in Dx_list)
+        x_fpath = self.get_real_name(index, fname)
+        with open(x_fpath, 'wb') as fh:
+            fh.write(Dx_content)
+        # p
+        Dx = np.array(Dx_list, ndmin=2)
+        # print(Dx.shape, byte_ndarray.shape)
+        assert Dx.shape[1] == byte_ndarray.shape[1]
+        DD[index] = Dx
+        P = np.bitwise_xor.reduce(DD)
+        assert P.ndim == 1
+        assert P.shape[0] == byte_ndarray.shape[1]
+        P_content = self._1darray_to_str(P)
+        P_path = self.get_real_name(self.N - 2, fname)
+        with open(P_path, 'wb') as fh:
+            fh.write(P_content)
 
     def write(self, content, fname):
         byte_ndarray = self._gen_ndarray_from_content(content, self.N - 2)
@@ -112,5 +143,8 @@ if __name__ == '__main__':
     # error_index = 0
     original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
     data_fname = 'good.dat'
-    r6.write(original_content, data_fname)
+    # r6.write(original_content, data_fname)
     # r6.recover_d_or_p(data_fname, error_index)
+    # r6.recover_d_p(data_fname, 1)
+    r6_content = r6.read(data_fname, len(original_content))
+    print(r6_content.__repr__())
