@@ -66,11 +66,11 @@ class RAID(object):
         byte_nparray = np.array(byte_list, dtype=self.BYTE_TYPE)
         return byte_nparray
 
-    def _gen_ndarray_from_content(self, content):
+    def _gen_ndarray_from_content(self, content, num):
         # gen N-1 length empty list
-        content_list = [[] for i in repeat(None, self.N - 1)]
+        content_list = [[] for i in repeat(None, num)]
         for i in xrange(len(content)):
-            mod_i = i % (self.N - 1)
+            mod_i = i % num
             content_list[mod_i].append(content[i])
         byte_list = []
         length = len(sorted(content_list, key=len, reverse=True)[0])
@@ -87,7 +87,7 @@ class RAID(object):
         str_list = [chr(b) for b in real_write_content]
         return ''.join(str_list)
 
-    def _write_n(self, fname, write_array):
+    def _write_n(self, fname, write_array, N):
         r"""
         doesn't care about trailing '\x0'
         :param fname:
@@ -96,7 +96,8 @@ class RAID(object):
         """
         get_logger().info('write_array:\n{}'.format(write_array))
         # write N
-        for j in range(self.N):
+        assert write_array.shape[0] == N
+        for j in range(N):
             fpath = self.get_real_name(j, fname)
             content_i = self._1darray_to_str(write_array[j])
             with open(fpath, 'wb') as fh:

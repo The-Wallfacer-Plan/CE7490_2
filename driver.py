@@ -47,10 +47,11 @@ if __name__ == '__main__':
         fpath = os.path.join(config.root, fname)
         with open(fpath, 'rb') as fh:
             content = fh.read()
-        raid = RAID5(4)
-        raid.write(content, fname)
-        size = len(content)
-        content_raid = raid.read(fname, size)
-        assert content == content_raid
-        error_index = 2
-        raid.recover(fname, error_index)
+        for raid_type in [RAID4, RAID5]:
+            raid = raid_type(4)
+            raid.write(content, fname)
+            size = len(content)
+            content_raid = raid.read(fname, size)
+            assert content == content_raid
+            error_index = 2
+            raid.recover(fname, error_index)

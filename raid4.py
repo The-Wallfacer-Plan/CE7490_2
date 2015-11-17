@@ -50,9 +50,9 @@ class RAID4(RAID):
         return write_array
 
     def write(self, content, fname):
-        byte_ndarray = self._gen_ndarray_from_content(content)
+        byte_ndarray = self._gen_ndarray_from_content(content, self.N - 1)
         write_array = self.__gen_raid_array(byte_ndarray)
-        self._write_n(fname, write_array)
+        self._write_n(fname, write_array, self.N)
 
 
 if __name__ == '__main__':

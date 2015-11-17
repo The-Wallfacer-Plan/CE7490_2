@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import utils
 from raid import RAID
 
 
@@ -10,6 +11,12 @@ class RAID6(RAID):
         assert 4 <= N
         super(RAID6, self).__init__(N)
 
+    def _check_p(self, byte_ndarray):
+        pass
+
+    def _check_q(self, byte_ndarray):
+        pass
+
     def _check(self, byte_nparray):
         pass
 
@@ -20,6 +27,9 @@ class RAID6(RAID):
         flat_list = data_ndarray.ravel(1)[:size]
         flat_str_list = [chr(e) for e in flat_list]
         return ''.join(flat_str_list)
+
+    def recover(self, fname, exclude):
+        raise NotImplementedError("not implemented; split into several cases")
 
     def recover_d(self, fname, index):
         """
@@ -65,4 +75,5 @@ class RAID6(RAID):
         """
 
     def write(self, content, fname):
-        pass
+        byte_ndarray = self._gen_ndarray_from_content(content, self.N - 2)
+        p_ndarray = utils.parity(byte_ndarray)
