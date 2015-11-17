@@ -13,7 +13,8 @@ class GF(object):
     def __init__(self):
         self.__dict__ = self.__shared_state
         self.N = 8
-        self.modulus = BitVector.BitVector(bitstring='100011011')
+        # self.modulus = BitVector.BitVector(bitstring='100011011')
+        self.modulus = BitVector.BitVector(bitstring='100011101')
         self.circle = 2 ** self.N - 1
         if 'generator' not in self.__dict__:
             self.init_generator()
@@ -31,7 +32,7 @@ class GF(object):
             if counter >= self.circle:
                 break
             res = res.gf_multiply_modular(base, self.modulus, self.N)
-        print(len(self.generator))
+        assert len(set(self.generator)) == self.circle
 
     @staticmethod
     def dump_bitvector(bv, display_base='x', display_width=2):
@@ -42,3 +43,5 @@ class GF(object):
 if __name__ == '__main__':
     init_logger()
     gf = GF()
+    for i, g in enumerate(gf.generator):
+        print('{:3d} {:>s}'.format(i, g))
