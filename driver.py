@@ -5,6 +5,7 @@ import random
 import string
 
 import config
+import utils
 from log_helper import get_logger, init_logger
 from raid4 import RAID4
 from raid5 import RAID5
@@ -23,8 +24,7 @@ def gen_rnd_file(fname, size, content_type):
         if file_size == size:
             get_logger().warning('fname={} with size={} exists'.format(fname, size))
             return
-    with open(fpath, 'wb') as fout:
-        fout.write(content)
+    utils.write_content(fpath, content)
 
 
 # noinspection PyUnusedLocal
@@ -47,11 +47,11 @@ if __name__ == '__main__':
         fpath = os.path.join(config.root, fname)
         with open(fpath, 'rb') as fh:
             content = fh.read()
-        for raid_type in [RAID4, RAID5]:
+        for raid_type in [RAID4, RAID5, RAID6]:
             raid = raid_type(4)
             raid.write(content, fname)
             size = len(content)
             content_raid = raid.read(fname, size)
             assert content == content_raid
-            error_index = 2
-            raid.recover(fname, error_index)
+            # error_index = 2
+            # raid.recover(fname, error_index)

@@ -33,8 +33,7 @@ class RAID4(RAID):
         assert parity.ndim == 1
         content = self._1darray_to_str(parity)
         fpath = self.get_real_name(index, fname)
-        with open(fpath, 'wb') as fh:
-            fh.write(content)
+        utils.write_content(fpath, content)
         # check
         read_ndarray = self._read_n(fname, self.N)
         self.check(read_ndarray)

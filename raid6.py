@@ -69,8 +69,7 @@ class RAID6(RAID):
         assert parity.ndim == 1
         content = self._1darray_to_str(parity)
         fpath = self.get_real_name(index, fname)
-        with open(fpath, 'wb') as fh:
-            fh.write(content)
+        utils.write_content(fpath, content)
         # check data or p
         read_ndarray = self._read_n(fname, self.N - 1)
         utils.check_data_p(read_ndarray)
@@ -88,8 +87,7 @@ class RAID6(RAID):
         q_ndarray.shape = (new_num,)
         content = self._1darray_to_str(q_ndarray)
         fpath = self.get_real_name(self.N - 1, fname)
-        with open(fpath, 'wb') as fh:
-            fh.write(content)
+        utils.write_content(fpath, content)
 
     def recover_d_q(self, fname, index):
         """
@@ -129,14 +127,12 @@ class RAID6(RAID):
         Dx = self.gf_1darray_add(np.array(first), np.array(second))
         Dx_content = self._1darray_to_str(Dx)
         x_fpath = self.get_real_name(x, fname)
-        with open(x_fpath, 'wb') as fh:
-            fh.write(Dx_content)
+        utils.write_content(x_fpath, Dx_content)
         # Dy
         Dy = self.gf_1darray_add(P ^ Pxy, Dx)
         Dy_content = self._1darray_to_str(Dy)
         y_fpath = self.get_real_name(y, fname)
-        with open(y_fpath, 'wb') as fh:
-            fh.write(Dy_content)
+        utils.write_content(y_fpath, Dy_content)
 
     # FIXME error
     def recover_d_p(self, fname, index):
@@ -159,8 +155,7 @@ class RAID6(RAID):
         ###
         Dx_content = ''.join(chr(i) for i in Dx_list)
         x_fpath = self.get_real_name(index, fname)
-        with open(x_fpath, 'wb') as fh:
-            fh.write(Dx_content)
+        utils.write_content(x_fpath, Dx_content)
         # p
         Dx = np.array(Dx_list, ndmin=2)
         # print(Dx.shape, byte_ndarray.shape)
@@ -173,8 +168,7 @@ class RAID6(RAID):
         # do not need to update DD
         P_content = self._1darray_to_str(P)
         P_path = self.get_real_name(self.N - 2, fname)
-        with open(P_path, 'wb') as fh:
-            fh.write(P_content)
+        utils.write_content(P_path, P_content)
 
     def write(self, content, fname):
         byte_ndarray = self._gen_ndarray_from_content(content, self.N - 2)
@@ -200,4 +194,4 @@ if __name__ == '__main__':
     # r6.recover_d_p(data_fname, 1)
     r6.recover_2d(data_fname, 0, 1)
     r6_content = r6.read(data_fname, len(original_content))
-    # print(r6_content.__repr__())
+    print(r6_content.__repr__())

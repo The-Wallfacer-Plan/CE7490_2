@@ -83,6 +83,16 @@ def gen_q(data_ndarray):
     return arr
 
 
+def read_content(fpath):
+    with open(fpath, 'rb') as fh:
+        return fh.read()
+
+
+def write_content(fpath, content):
+    with open(fpath, 'wb') as fh:
+        fh.write(content)
+
+
 def check_q(data_ndarray, q_ndarray):
     computed = gen_q(data_ndarray)
     if not np.array_equal(computed, q_ndarray):

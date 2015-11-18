@@ -13,30 +13,23 @@ from log_helper import get_logger
 # noinspection PyPep8Naming
 class RAID(object):
     def __init__(self, N):
+        """
+        :param N: the total number of disks available
+        """
         self.BYTE_TYPE = np.int
-        self.EOF = -1
         self.ZERO = 0
         self.N = N
         self.disk_path = os.path.join(config.root, self.__class__.__name__)
         self.data = [None] * N
         utils.init_disks(self.disk_path, self.N)
 
-    def get_real_name(self, i, fname):
-        return os.path.join(self.disk_path, config.disk_prefix + str(i), fname)
-
-    @staticmethod
-    def read_chunk(fpath, size):
-        with open(fpath, 'rb') as rf:
-            while True:
-                chunk = rf.read(size)
-                if chunk == '':
-                    raise StopIteration
-                yield chunk
-
-    @staticmethod
-    def _contents(fpath):
-        with open(fpath, 'rb') as fh:
-            return fh.read()
+    def get_real_name(self, disk_index, fname):
+        """
+        :param disk_index: the index of the disk
+        :param fname: fake file name used for position simulation
+        :return:
+        """
+        return os.path.join(self.disk_path, config.disk_prefix + str(disk_index), fname)
 
     def _read_n(self, fname, N, exclude=None):
         """
@@ -50,7 +43,7 @@ class RAID(object):
                 content_list.append(list())
             else:
                 fpath = self.get_real_name(i, fname)
-                content_list.append(self._contents(fpath))
+                content_list.append(utils.read_content(fpath))
         get_logger().info(content_list)
         length = len(sorted(content_list, key=len, reverse=True)[0])
         # list of bytes (int) list
@@ -93,11 +86,10 @@ class RAID(object):
         get_logger().info('write_array:\n{}'.format(write_array))
         # write N
         assert write_array.shape[0] == N
-        for j in range(N):
-            fpath = self.get_real_name(j, fname)
-            content_i = self._1darray_to_str(write_array[j])
-            with open(fpath, 'wb') as fh:
-                fh.write(content_i)
+        for i in range(N):
+            fpath_i = self.get_real_name(i, fname)
+            content_i = self._1darray_to_str(write_array[i])
+            utils.write_content(fpath_i, content_i)
 
     def check(self, byte_ndarray):
         raise NotImplementedError
