@@ -31,9 +31,6 @@ def gen_rnd_file(fname, size, content_type):
 def starter():
     if not os.path.isdir(config.root):
         os.mkdir(config.root)
-    r4 = RAID4(config.N)
-    r5 = RAID4(config.N)
-    r6 = RAID6(config.N)
     gen_rnd_file('data1', SIZE, 'text')
     gen_rnd_file('data2', SIZE, 'bin')
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 from itertools import repeat
 
@@ -17,11 +16,10 @@ class RAID(object):
         :param N: the total number of disks available
         """
         self.BYTE_TYPE = np.int
-        self.ZERO = 0
+        self.ZERO = config.ZERO
         self.N = N
-        self.disk_path = os.path.join(config.root, self.__class__.__name__)
-        self.data = [None] * N
-        utils.setup_disks(self.disk_path, self.N)
+        self._disk_path = os.path.join(config.root, self.__class__.__name__)
+        utils.setup_disks(self._disk_path, self.N)
 
     def get_real_name(self, disk_index, fname):
         """
@@ -29,7 +27,7 @@ class RAID(object):
         :param fname: fake file name used for position simulation
         :return:
         """
-        return os.path.join(self.disk_path, config.disk_prefix + str(disk_index), fname)
+        return os.path.join(self._disk_path, config.disk_prefix + str(disk_index), fname)
 
     def _read_n(self, fname, N, exclude=None):
         """
@@ -72,6 +70,7 @@ class RAID(object):
         return byte_nparray
 
     def _1darray_to_str(self, _1darray):
+        # TODO: determine whether filtering is actually needed
         real_write_content = filter(lambda b: b >= self.ZERO, _1darray)
         str_list = [chr(b) for b in real_write_content]
         return ''.join(str_list)
