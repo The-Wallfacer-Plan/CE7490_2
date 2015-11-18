@@ -21,7 +21,7 @@ class RAID(object):
         self.N = N
         self.disk_path = os.path.join(config.root, self.__class__.__name__)
         self.data = [None] * N
-        utils.init_disks(self.disk_path, self.N)
+        utils.setup_disks(self.disk_path, self.N)
 
     def get_real_name(self, disk_index, fname):
         """

@@ -18,7 +18,8 @@ class RAIDCheckError(Exception):
         super(RAIDCheckError, self).__init__(msg)
 
 
-def init_disks(root_path, N):
+# noinspection PyPep8Naming
+def setup_disks(root_path, N):
     if not os.path.isdir(root_path):
         os.mkdir(root_path)
     for i in xrange(N):
@@ -38,13 +39,18 @@ def write_content(fpath, content):
         fh.write(content)
 
 
-def gen_p(data_ndarray):
+def gen_p(data_ndarray, ndim):
     """
+    :param ndim: ndarray dimension
     :param data_ndarray: the data array
     :return: the parity of the data_ndarray
     """
+    assert ndim in [1, 2]
     res = np.bitwise_xor.reduce(data_ndarray)
     assert res.ndim == 1
+    if ndim == 1:
+        return res
+    # ndim == 2
     new_num = res.shape[0]
     res.shape = (1, new_num)
     return res
@@ -76,9 +82,9 @@ def gen_q(data_ndarray):
 
 
 def check_data_p(byte_ndarray):
-    res = np.bitwise_xor.reduce(byte_ndarray)
-    if np.count_nonzero(res) != 0:
-        msg = 'xor of arrays not all zeros, res={}'.format(res)
+    computed = gen_p(byte_ndarray, ndim=1)
+    if np.count_nonzero(computed) != 0:
+        msg = 'xor of arrays not all zeros, computed={}'.format(computed)
         raise RAIDCheckError(msg)
 
 

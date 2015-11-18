@@ -29,8 +29,7 @@ class RAID4(RAID):
     def recover(self, fname, index):
         assert 0 <= index < self.N
         byte_ndarray = self._read_n(fname, self.N, exclude=index)
-        parity = np.bitwise_xor.reduce(byte_ndarray)
-        assert parity.ndim == 1
+        parity = utils.gen_p(byte_ndarray, ndim=1)
         content = self._1darray_to_str(parity)
         fpath = self.get_real_name(index, fname)
         utils.write_content(fpath, content)
@@ -40,7 +39,7 @@ class RAID4(RAID):
 
     def __gen_raid_array(self, byte_ndarray):
         # calculate parity and append
-        parity = utils.gen_p(byte_ndarray)
+        parity = utils.gen_p(byte_ndarray, ndim=2)
         write_array = np.concatenate([byte_ndarray, parity])
         get_logger().info('write_array=\n{}'.format(write_array))
         return write_array

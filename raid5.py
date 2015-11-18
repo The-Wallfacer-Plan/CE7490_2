@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import numpy as np
-
 # noinspection PyPep8Naming
 import utils
 from log_helper import get_logger
@@ -44,7 +43,7 @@ class RAID5(RAID4):
     def __gen_raid_array(self, byte_ndarray):
         assert byte_ndarray.ndim == 2
         assert byte_ndarray.shape[0] + 1 == self.N
-        parity = utils.gen_p(byte_ndarray)
+        parity = utils.gen_p(byte_ndarray, ndim=2)
         gen_ndarray = np.concatenate([byte_ndarray, parity])
         write_ndarray = self.swap(gen_ndarray)
         return write_ndarray

@@ -65,8 +65,7 @@ class RAID6(RAID):
         """
         assert 0 <= index < self.N - 1
         byte_ndarray = self._read_n(fname, self.N - 1, exclude=index)
-        parity = np.bitwise_xor.reduce(byte_ndarray)
-        assert parity.ndim == 1
+        parity = utils.gen_p(byte_ndarray, ndim=1)
         content = self._1darray_to_str(parity)
         fpath = self.get_real_name(index, fname)
         utils.write_content(fpath, content)
@@ -115,7 +114,7 @@ class RAID6(RAID):
         P = byte_ndarray[-2:-1]
         Q = byte_ndarray[-1:]
         # Pxy
-        Pxy = utils.gen_p(DD)
+        Pxy = utils.gen_p(DD, ndim=2)
         # Qxy
         Qxy = utils.gen_q(DD)
         # Axy, Bxy
@@ -134,7 +133,6 @@ class RAID6(RAID):
         y_fpath = self.get_real_name(y, fname)
         utils.write_content(y_fpath, Dy_content)
 
-    # FIXME error
     def recover_d_p(self, fname, index):
         """
         recover data drive (index) and 'p' drive
@@ -158,12 +156,10 @@ class RAID6(RAID):
         utils.write_content(x_fpath, Dx_content)
         # p
         Dx = np.array(Dx_list, ndmin=2)
-        # print(Dx.shape, byte_ndarray.shape)
         assert Dx.shape[1] == byte_ndarray.shape[1]
         # update firstly
         DD[index] = Dx
-        P = np.bitwise_xor.reduce(DD)
-        assert P.ndim == 1
+        P = utils.gen_p(DD, ndim=1)
         assert P.shape[0] == byte_ndarray.shape[1]
         # do not need to update DD
         P_content = self._1darray_to_str(P)
@@ -172,7 +168,7 @@ class RAID6(RAID):
 
     def write(self, content, fname):
         byte_ndarray = self._gen_ndarray_from_content(content, self.N - 2)
-        p_ndarray = utils.gen_p(byte_ndarray)
+        p_ndarray = utils.gen_p(byte_ndarray, ndim=2)
         q_ndarray = utils.gen_q(byte_ndarray)
         write_ndarray = np.concatenate([byte_ndarray, p_ndarray, q_ndarray])
         self._write_n(fname, write_ndarray, self.N)
@@ -191,7 +187,7 @@ if __name__ == '__main__':
     r6.write(original_content, data_fname)
     # error_index = 0
     # r6.recover_d_or_p(data_fname, error_index)
-    # r6.recover_d_p(data_fname, 1)
+    r6.recover_d_p(data_fname, 1)
     r6.recover_2d(data_fname, 0, 1)
     r6_content = r6.read(data_fname, len(original_content))
     print(r6_content.__repr__())
