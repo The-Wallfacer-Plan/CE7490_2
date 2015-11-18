@@ -6,7 +6,7 @@ from BitVector import BitVector
 from log_helper import get_logger, init_logger
 
 
-# noinspection PyCallingNonCallable,PyAttributeOutsideInit
+# noinspection PyCallingNonCallable,PyAttributeOutsideInit,PyPep8Naming
 class GF(object):
     __shared_state = {}
 

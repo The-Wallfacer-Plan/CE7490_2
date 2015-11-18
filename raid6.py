@@ -19,6 +19,7 @@ class RAID6(RAID):
         super(RAID6, self).__init__(N)
         self.gf = GF()
 
+    # noinspection PyMethodMayBeStatic
     def gf_1darray_add(self, A1, A2):
         """
         :param A1:
@@ -188,11 +189,12 @@ if __name__ == '__main__':
     init_logger()
     r6 = RAID6(4)
     original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
-    data_fname = 'good.dat'
+    # data_fname = 'good.dat'
+    data_fname = 'data1'
     r6.write(original_content, data_fname)
     # error_index = 0
     # r6.recover_d_or_p(data_fname, error_index)
     # r6.recover_d_p(data_fname, 1)
     r6.recover_2d(data_fname, 0, 1)
     r6_content = r6.read(data_fname, len(original_content))
-    print(r6_content.__repr__())
+    # print(r6_content.__repr__())
