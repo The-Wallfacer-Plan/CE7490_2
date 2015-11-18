@@ -82,7 +82,7 @@ class RAID6(RAID):
         :return:
         """
         byte_ndarray = self._read_n(fname, self.N - 2)
-        q_ndarray = utils.gf(byte_ndarray)
+        q_ndarray = utils.gen_q(byte_ndarray)
         assert q_ndarray.ndim == 2
         new_num = q_ndarray.shape[1]
         q_ndarray.shape = (new_num,)
@@ -117,9 +117,9 @@ class RAID6(RAID):
         P = byte_ndarray[-2:-1]
         Q = byte_ndarray[-1:]
         # Pxy
-        Pxy = utils.parity(DD)
+        Pxy = utils.gen_p(DD)
         # Qxy
-        Qxy = utils.gf(DD)
+        Qxy = utils.gen_q(DD)
         # Axy, Bxy
         A = self.gf.Axy(x, y)
         B = self.gf.Bxy(x, y)
@@ -151,7 +151,7 @@ class RAID6(RAID):
         DD = byte_ndarray[:-2]
         Q = byte_ndarray[-1:]
         # Dx
-        Qx = utils.gf(DD)
+        Qx = utils.gen_q(DD)
         g_x_inv = self.gf.generator[self.gf.circle - index]
         ###
         _add_list = self.gf_1darray_add(Q, Qx)
@@ -178,8 +178,8 @@ class RAID6(RAID):
 
     def write(self, content, fname):
         byte_ndarray = self._gen_ndarray_from_content(content, self.N - 2)
-        p_ndarray = utils.parity(byte_ndarray)
-        q_ndarray = utils.gf(byte_ndarray)
+        p_ndarray = utils.gen_p(byte_ndarray)
+        q_ndarray = utils.gen_q(byte_ndarray)
         write_ndarray = np.concatenate([byte_ndarray, p_ndarray, q_ndarray])
         self._write_n(fname, write_ndarray, self.N)
 
@@ -187,10 +187,13 @@ class RAID6(RAID):
 if __name__ == '__main__':
     # utils.simple_test(RAID6, False)
     init_logger()
-    r6 = RAID6(4)
+    r6 = RAID6(8)
     original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
     # data_fname = 'good.dat'
     data_fname = 'data1'
+    # fpath = os.path.join(config.root, data_fname)
+    # with open(fpath, 'rb') as fh:
+    #     original_content = fh.read()
     r6.write(original_content, data_fname)
     # error_index = 0
     # r6.recover_d_or_p(data_fname, error_index)

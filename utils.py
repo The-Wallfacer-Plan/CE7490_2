@@ -23,10 +23,10 @@ def init_disks(root_path, N):
             os.mkdir(fpath)
 
 
-def parity(data_ndarray):
+def gen_p(data_ndarray):
     """
     :param data_ndarray: the data array
-    :return:
+    :return: the parity of the data_ndarray
     """
     res = np.bitwise_xor.reduce(data_ndarray)
     assert res.ndim == 1
@@ -58,7 +58,7 @@ def simple_test(raid_level, test_recovery=True):
         raid.recover(data_fname, error_index)
 
 
-def gf(data_ndarray):
+def gen_q(data_ndarray):
     """
     :param data_ndarray: the data ndarray
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
@@ -84,7 +84,7 @@ def gf(data_ndarray):
 
 
 def check_q(data_ndarray, q_ndarray):
-    computed = gf(data_ndarray)
+    computed = gen_q(data_ndarray)
     if not np.array_equal(computed, q_ndarray):
         msg = 'Q check failed, q_ndarray={}, computed={}'.format(q_ndarray, computed)
         raise RAIDCheckError(msg)

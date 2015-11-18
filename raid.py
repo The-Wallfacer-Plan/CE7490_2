@@ -38,17 +38,13 @@ class RAID(object):
         with open(fpath, 'rb') as fh:
             return fh.read()
 
-    def _read_n(self, fname, N, **kwargs):
+    def _read_n(self, fname, N, exclude=None):
         """
         generate nparray with dtype=BYTE_TYPE
         :param fname:
         :return: ndarray with shape=(n, length)
         """
         content_list = []
-        if 'exclude' in kwargs:
-            exclude = kwargs['exclude']
-        else:
-            exclude = None
         for i in xrange(N):
             if (isinstance(exclude, int) and i == exclude) or (isinstance(exclude, list) and i in exclude):
                 content_list.append(list())

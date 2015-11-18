@@ -41,7 +41,7 @@ class RAID4(RAID):
 
     def __gen_raid_array(self, byte_ndarray):
         # calculate parity and append
-        parity = utils.parity(byte_ndarray)
+        parity = utils.gen_p(byte_ndarray)
         write_array = np.concatenate([byte_ndarray, parity])
         get_logger().info('write_array=\n{}'.format(write_array))
         return write_array
