@@ -5,7 +5,7 @@ import numpy as np
 from BitVector.BitVector import BitVector
 
 import utils
-from galois import GF
+from gf8 import GF
 from log_helper import init_logger
 from raid import RAID
 
