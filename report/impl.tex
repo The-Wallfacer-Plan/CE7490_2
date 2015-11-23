@@ -1,0 +1,23 @@
+\subsection{Implementation}
+
+In this section, we will discuss how we implemented the RAID 6 to meet the basic requirement of the project.
+We implement our project in Python2.7.9, with the help of numpy and BitVector modules.
+
+We implement 3 RAID types: RAID4, RAID5, and RAID6. We use folders in a typical filesystem to simulate these independent disks. We also simplify the data access procedure; that is to say, instead of maintaining the offset of each blocks, we specify a filename for each chunk of data. This is reasonable since the names can be viewed as a starting point of each data set within each disk. The input data are randomly generated with given byte length; and in Unix like systems, this is like generating data from /dev/urandom.
+
+The disk number can be configured with parameter \textbf{N}: in RAID4, $N\ge 3$ and N-1 preceding disks are used as data disks with the last one as parity disk; for RAID5, $N\ge 3$ and the parity byte is distributed among all the disks;  for RAID6, $N\ge 4$, with $N-2$ data disks and 1 P disk and 1 Q disk. For simplicity, we use DN as the number of data disks. The value of N can be extremely large in principle, however for RAID6, since we use $GF^8$ and use byte as the unit, N is supposed to be $\le 257$.
+
+For all of the implemented RAIDs, we provide read/write interfaces. The write operation firstly divides the L bytes of data into DN parts. In case the data length is not all the same, we fill in trailing zeros.
+The integrity check is done internally during each read. For RAID4 and RAID5, we implement data recovery functionality given the corrupted disk index is known. For RAID6, we separate the recovery scenarios into the following cases:
+
+\begin{itemize}
+	\item Recover data or P disk (\verb|recover_d_or_p}|)
+	\item Recover Q disk (\verb|recover_q|)
+	\item Recover both data and Q disk (\verb|recover_d_q|)
+	\item Recover 2 data disks (\verb|recover_2d|)
+	\item Recover both data disk and Q disk (\verb|recover_d_p|)
+\end{itemize}
+
+
+
+

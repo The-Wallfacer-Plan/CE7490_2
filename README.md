@@ -1,9 +1,9 @@
-data file types:
+data types:
 - text
 - binary
 
 operations:
-- read
+- read --> check
 - write
 - recover
 
@@ -12,9 +12,9 @@ predefined:
 - N stripes + 2 parities
 
 requirements:
-- find which disk is corrupted
-x recover 2-disk case ?
-- mutable files
+x find which disk is corrupted
+x recover 2-disk case
+x mutable files
 
 evaluation
 x comparison with RAID5
