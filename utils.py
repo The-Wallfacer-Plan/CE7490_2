@@ -59,6 +59,7 @@ def gen_p(data_ndarray, ndim):
 def gen_q(data_ndarray, ndim):
     """
     :param data_ndarray: the data ndarray
+    :param ndim: real dim
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
     """
     transposed = np.transpose(data_ndarray)
@@ -76,6 +77,7 @@ def gen_q(data_ndarray, ndim):
         q_value = reduce(operator.xor, bv_list).int_val()
         q_list.append(q_value)
     arr = np.array(q_list, ndmin=ndim)
+    get_logger().info("arr={}".format(arr))
     # assert arr.shape[1] == data_ndarray.shape[1]
     return arr
 

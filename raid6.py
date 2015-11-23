@@ -6,7 +6,7 @@ from BitVector.BitVector import BitVector
 
 import utils
 from gf8 import GF
-from log_helper import init_logger
+from log_helper import init_logger, get_logger
 from raid import RAID
 
 
@@ -14,6 +14,8 @@ from raid import RAID
 
 
 class RAID6(RAID):
+    _logger = get_logger()
+
     def __init__(self, N):
         assert 4 <= N
         super(RAID6, self).__init__(N)
@@ -56,6 +58,13 @@ class RAID6(RAID):
     def recover(self, fname, exclude):
         raise NotImplementedError("not implemented; split into several cases")
 
+    def _get_corrupted_data_disk(self, P_star, Q_star):
+        p0 = BitVector(intVal=P_star[0][0])
+        q0 = BitVector(intVal=Q_star[0][0])
+        log_p0 = self.gf.log_generator(p0)
+        log_q0 = self.gf.log_generator(q0)
+        return (log_q0 - log_p0) % self.gf.circle
+
     def detect_corruption(self, fname):
         """
         single disk corruption detection
@@ -65,12 +74,32 @@ class RAID6(RAID):
         # all disks, including P, Q
         byte_ndarray = self._read_n(fname, self.N)
         data_ndarray = byte_ndarray[:-2]
-        P = byte_ndarray[:-2:-1]
-        Q = byte_ndarray[:-1]
+        self._logger.info("byte_ndarray=\n{}".format(byte_ndarray))
+        P = byte_ndarray[-2:-1]
+        self._logger.info("p={}".format(P))
+        Q = byte_ndarray[-1]
+        self._logger.info("Q={}".format(Q))
         P_prime = utils.gen_p(data_ndarray, ndim=2)
+        self._logger.info("P_prime={}".format(P_prime))
         Q_prime = utils.gen_q(data_ndarray, ndim=2)
-
-
+        self._logger.info("Q_prime={}".format(Q_prime))
+        P_star = np.bitwise_xor(P, P_prime)
+        Q_star = np.bitwise_xor(Q, Q_prime)
+        P_nonzero = np.count_nonzero(P_star)
+        Q_nonzero = np.count_nonzero(Q_star)
+        if P_nonzero == 0 and Q_nonzero == 0:
+            print("no corruption")
+            return None
+        elif P_nonzero == 0 and Q_nonzero != 0:
+            print("Q corruption")
+            return self.N - 1
+        elif P_nonzero != 0 and Q_nonzero == 0:
+            print("P corruption")
+            return self.N - 2
+        else:
+            index = self._get_corrupted_data_disk(P_star, Q_star)
+            print("data disk {} corruption".format(index))
+            return index
 
     def recover_d_or_p(self, fname, index):
         """
@@ -194,16 +223,18 @@ if __name__ == '__main__':
     # utils.simple_test(RAID6, False)
     init_logger()
     r6 = RAID6(8)
-    original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
+    original_content = b'good_morning\x03_sir_yes\x01\x02'
+    # original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
     # data_fname = 'good.dat'
     data_fname = 'data1'
     # fpath = os.path.join(config.root, data_fname)
     # with open(fpath, 'rb') as fh:
     #     original_content = fh.read()
-    r6.write(original_content, data_fname)
+    # r6.write(original_content, data_fname)
     # error_index = 0
     # r6.recover_d_or_p(data_fname, error_index)
-    r6.recover_d_p(data_fname, 1)
-    r6.recover_2d(data_fname, 0, 1)
-    r6_content = r6.read(data_fname, len(original_content))
-    print(r6_content.__repr__())
+    # r6.recover_d_p(data_fname, 1)
+    # r6.recover_2d(data_fname, 0, 1)
+    # r6_content = r6.read(data_fname, len(original_content))
+    # print(r6_content.__repr__())
+    r6.detect_corruption(data_fname)

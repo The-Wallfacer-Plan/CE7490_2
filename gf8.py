@@ -22,6 +22,11 @@ class GF(object):
     def multiply(self, first, second):
         return first.gf_multiply_modular(second, self.modulus, self.N)
 
+    def log_generator(self, result):
+        for i in range(self.circle):
+            if self.generator[i].intValue() == result.intValue():
+                return i
+
     def power(self, a, n):
         n %= self.circle  # n is guaranteed >=0 after modular
         res = BitVector(intVal=1)
