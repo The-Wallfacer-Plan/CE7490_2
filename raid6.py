@@ -5,7 +5,7 @@ import numpy as np
 
 import config
 import utils
-from ff8 import GF
+from gf import GF
 from log_helper import init_logger, get_logger
 from raid import RAID
 
