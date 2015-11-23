@@ -96,7 +96,7 @@ def gen_q(data_ndarray, ndim):
             # map(lambda i: print(i), bv_list)
         q_value = reduce(operator.xor, bv_list).int_val()
         q_list.append(q_value)
-    arr = np.array(q_list, ndmin=ndim)
+    arr = np.array(q_list, ndmin=ndim, dtype=config.BYTE_TYPE)
     get_logger().info("arr={}".format(arr))
     # assert arr.shape[1] == data_ndarray.shape[1]
     return arr

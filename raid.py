@@ -17,7 +17,7 @@ class RAID(object):
         """
         :param N: the total number of disks available
         """
-        self.BYTE_TYPE = np.int
+        self.BYTE_TYPE = config.BYTE_TYPE
         self.ZERO = config.ZERO
         self.N = N
         self._disk_path = os.path.join(config.root, self.__class__.__name__)

@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import numpy as np
 
+import config
 import utils
 from gf8 import GF
 from log_helper import init_logger, get_logger
@@ -150,7 +151,7 @@ class RAID6(RAID):
         # Dx
         first = utils.gf_a_multiply_list(A, utils.gf_1darray_add(P, Pxy))
         second = utils.gf_a_multiply_list(B, utils.gf_1darray_add(Q, Qxy))
-        Dx = utils.gf_1darray_add(np.array(first), np.array(second))
+        Dx = utils.gf_1darray_add(np.array(first, dtype=config.BYTE_TYPE), np.array(second, dtype=config.BYTE_TYPE))
         Dx_content = self._1darray_to_str(Dx)
         x_fpath = self.get_real_name(x, fname)
         utils.write_content(x_fpath, Dx_content)
