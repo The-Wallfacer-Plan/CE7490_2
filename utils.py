@@ -39,6 +39,26 @@ def write_content(fpath, content):
         fh.write(content)
 
 
+# noinspection PyMethodMayBeStatic
+def gf_1darray_add(A1, A2):
+    """
+    :param A1:
+    :param A2:
+    :return: 1darray
+    """
+    return (A1 ^ A2).ravel(1)
+
+
+def gf_a_multiply_list(a, l):
+    """
+    :param a: BitVector type
+    :param l:
+    :return: list of int
+    """
+    gf = GF()
+    return [gf.multiply(BitVector(intVal=i), a).int_val() for i in l]
+
+
 def gen_p(data_ndarray, ndim):
     """
     :param ndim: ndarray dimension

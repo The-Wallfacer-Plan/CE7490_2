@@ -11,6 +11,7 @@ from raid import RAID
 # noinspection PyPep8Naming,PyAttributeOutsideInit
 class RAID4(RAID):
     def __init__(self, N):
+        assert 3 <= N
         super(RAID4, self).__init__(N)
 
     def check(self, byte_ndarray):

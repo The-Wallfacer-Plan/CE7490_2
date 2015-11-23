@@ -23,8 +23,12 @@ class GF(object):
         return first.gf_multiply_modular(second, self.modulus, self.N)
 
     def log_generator(self, result):
+        get_logger().info(type(result))
+        assert type(result) in (int, BitVector)
+        if isinstance(result, BitVector):
+            result = result.int_val()
         for i in range(self.circle):
-            if self.generator[i].intValue() == result.intValue():
+            if self.generator[i].int_val() == result:
                 return i
 
     def power(self, a, n):

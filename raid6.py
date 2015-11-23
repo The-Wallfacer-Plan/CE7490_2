@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import numpy as np
-from BitVector.BitVector import BitVector
 
 import utils
 from gf8 import GF
@@ -20,23 +19,6 @@ class RAID6(RAID):
         assert 4 <= N
         super(RAID6, self).__init__(N)
         self.gf = GF()
-
-    # noinspection PyMethodMayBeStatic
-    def gf_1darray_add(self, A1, A2):
-        """
-        :param A1:
-        :param A2:
-        :return: 1darray
-        """
-        return (A1 ^ A2).ravel(1)
-
-    def gf_a_multiply_list(self, a, l):
-        """
-        :param a: BitVector type
-        :param l:
-        :return: list of int
-        """
-        return [self.gf.multiply(BitVector(intVal=i), a).int_val() for i in l]
 
     def check(self, byte_ndarray):
         # check p
@@ -59,8 +41,8 @@ class RAID6(RAID):
         raise NotImplementedError("not implemented; split into several cases")
 
     def _get_corrupted_data_disk(self, P_star, Q_star):
-        p0 = BitVector(intVal=P_star[0][0])
-        q0 = BitVector(intVal=Q_star[0][0])
+        p0 = int(P_star[0][0])
+        q0 = int(Q_star[0][0])
         log_p0 = self.gf.log_generator(p0)
         log_q0 = self.gf.log_generator(q0)
         return (log_q0 - log_p0) % self.gf.circle
@@ -147,8 +129,8 @@ class RAID6(RAID):
         """
         recover data drives (x and y)
         :param fname:
-        :param x:
-        :param y:
+        :param x: corrupted disk index
+        :param y: corrupted disk index
         :return:
         """
         assert 0 <= x < self.N - 2
@@ -166,14 +148,14 @@ class RAID6(RAID):
         A = self.gf.Axy(x, y)
         B = self.gf.Bxy(x, y)
         # Dx
-        first = self.gf_a_multiply_list(A, self.gf_1darray_add(P, Pxy))
-        second = self.gf_a_multiply_list(B, self.gf_1darray_add(Q, Qxy))
-        Dx = self.gf_1darray_add(np.array(first), np.array(second))
+        first = utils.gf_a_multiply_list(A, utils.gf_1darray_add(P, Pxy))
+        second = utils.gf_a_multiply_list(B, utils.gf_1darray_add(Q, Qxy))
+        Dx = utils.gf_1darray_add(np.array(first), np.array(second))
         Dx_content = self._1darray_to_str(Dx)
         x_fpath = self.get_real_name(x, fname)
         utils.write_content(x_fpath, Dx_content)
         # Dy
-        Dy = self.gf_1darray_add(P ^ Pxy, Dx)
+        Dy = utils.gf_1darray_add(P ^ Pxy, Dx)
         Dy_content = self._1darray_to_str(Dy)
         y_fpath = self.get_real_name(y, fname)
         utils.write_content(y_fpath, Dy_content)
@@ -193,8 +175,8 @@ class RAID6(RAID):
         Qx = utils.gen_q(DD, ndim=2)
         g_x_inv = self.gf.generator[self.gf.circle - index]
         ###
-        _add_list = self.gf_1darray_add(Q, Qx)
-        Dx_list = self.gf_a_multiply_list(g_x_inv, _add_list)
+        _add_list = utils.gf_1darray_add(Q, Qx)
+        Dx_list = utils.gf_a_multiply_list(g_x_inv, _add_list)
         ###
         Dx_content = ''.join(chr(i) for i in Dx_list)
         x_fpath = self.get_real_name(index, fname)
@@ -230,7 +212,7 @@ if __name__ == '__main__':
     # fpath = os.path.join(config.root, data_fname)
     # with open(fpath, 'rb') as fh:
     #     original_content = fh.read()
-    # r6.write(original_content, data_fname)
+    r6.write(original_content, data_fname)
     # error_index = 0
     # r6.recover_d_or_p(data_fname, error_index)
     # r6.recover_d_p(data_fname, 1)
