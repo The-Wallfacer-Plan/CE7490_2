@@ -55,7 +55,7 @@ def gf_a_multiply_list(a, l):
     :return: list of int
     """
     gf = GF()
-    return [gf.multiply(int(i), a).int_val() for i in l]
+    return [gf.multiply(int(i), a) for i in l]
 
 
 def gen_p(data_ndarray, ndim):
@@ -94,9 +94,6 @@ def gen_q(data_ndarray, ndim):
             bv_list.append(res_i)
             # map(lambda i: print(i), bv_list)
         q_value = reduce(operator.xor, bv_list)
-        # for BitVector
-        if not isinstance(q_value, int):
-            q_value = q_value.int_val()
         q_list.append(q_value)
     arr = np.array(q_list, ndmin=ndim, dtype=config.BYTE_TYPE)
     get_logger().info("arr={}".format(arr))

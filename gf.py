@@ -71,6 +71,7 @@ class GF(object):
 
     def power(self, a, n):
         n %= self.circle  # n is guaranteed >=0 after modular
+        res = 1
         while True:
             if n == 0:
                 return res
