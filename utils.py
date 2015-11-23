@@ -56,7 +56,7 @@ def gen_p(data_ndarray, ndim):
     return res
 
 
-def gen_q(data_ndarray):
+def gen_q(data_ndarray, ndim):
     """
     :param data_ndarray: the data ndarray
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
@@ -75,9 +75,8 @@ def gen_q(data_ndarray):
             # map(lambda i: print(i), bv_list)
         q_value = reduce(operator.xor, bv_list).int_val()
         q_list.append(q_value)
-    arr = np.array(q_list, ndmin=2)
-    assert arr.shape[1] == data_ndarray.shape[1]
-    # arr = np.zeros((1, byte_ndarray.shape[1]), byte_ndarray.dtype)
+    arr = np.array(q_list, ndmin=ndim)
+    # assert arr.shape[1] == data_ndarray.shape[1]
     return arr
 
 
@@ -89,7 +88,7 @@ def check_data_p(byte_ndarray):
 
 
 def check_q(data_ndarray, q_ndarray):
-    computed = gen_q(data_ndarray)
+    computed = gen_q(data_ndarray, ndim=2)
     if not np.array_equal(computed, q_ndarray):
         msg = 'Q check failed, q_ndarray={}, computed={}'.format(q_ndarray, computed)
         raise RAIDCheckError(msg)

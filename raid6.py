@@ -56,6 +56,22 @@ class RAID6(RAID):
     def recover(self, fname, exclude):
         raise NotImplementedError("not implemented; split into several cases")
 
+    def detect_corruption(self, fname):
+        """
+        single disk corruption detection
+        :param fname:
+        :return: corrupted disk index
+        """
+        # all disks, including P, Q
+        byte_ndarray = self._read_n(fname, self.N)
+        data_ndarray = byte_ndarray[:-2]
+        P = byte_ndarray[:-2:-1]
+        Q = byte_ndarray[:-1]
+        P_prime = utils.gen_p(data_ndarray, ndim=2)
+        Q_prime = utils.gen_q(data_ndarray, ndim=2)
+
+
+
     def recover_d_or_p(self, fname, index):
         """
         recover data drive or 'p' drive, simply using XOR
@@ -80,7 +96,7 @@ class RAID6(RAID):
         :return:
         """
         byte_ndarray = self._read_n(fname, self.N - 2)
-        q_ndarray = utils.gen_q(byte_ndarray)
+        q_ndarray = utils.gen_q(byte_ndarray, ndim=2)
         assert q_ndarray.ndim == 2
         new_num = q_ndarray.shape[1]
         q_ndarray.shape = (new_num,)
@@ -116,7 +132,7 @@ class RAID6(RAID):
         # Pxy
         Pxy = utils.gen_p(DD, ndim=2)
         # Qxy
-        Qxy = utils.gen_q(DD)
+        Qxy = utils.gen_q(DD, ndim=2)
         # Axy, Bxy
         A = self.gf.Axy(x, y)
         B = self.gf.Bxy(x, y)
@@ -145,7 +161,7 @@ class RAID6(RAID):
         DD = byte_ndarray[:-2]
         Q = byte_ndarray[-1:]
         # Dx
-        Qx = utils.gen_q(DD)
+        Qx = utils.gen_q(DD, ndim=2)
         g_x_inv = self.gf.generator[self.gf.circle - index]
         ###
         _add_list = self.gf_1darray_add(Q, Qx)
@@ -169,7 +185,7 @@ class RAID6(RAID):
     def write(self, content, fname):
         byte_ndarray = self._gen_ndarray_from_content(content, self.N - 2)
         p_ndarray = utils.gen_p(byte_ndarray, ndim=2)
-        q_ndarray = utils.gen_q(byte_ndarray)
+        q_ndarray = utils.gen_q(byte_ndarray, ndim=2)
         write_ndarray = np.concatenate([byte_ndarray, p_ndarray, q_ndarray])
         self._write_n(fname, write_ndarray, self.N)
 

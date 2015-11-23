@@ -13,14 +13,12 @@ predefined:
 
 requirements:
 - find which disk is corrupted
-- recover 2-disk case
-- s kb files (10<s<=100)
+x recover 2-disk case ?
 - mutable files
 
 evaluation
-- comparison with RAID5
+x comparison with RAID5
 
 TODO:
 - unittest
-- specify size
-- may due to bitvector unspecified size bug
+- deal with socket
