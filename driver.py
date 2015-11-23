@@ -3,6 +3,7 @@
 import os
 import random
 import string
+import time
 
 import config
 import utils
@@ -35,7 +36,8 @@ def starter():
     gen_rnd_file('data2', SIZE, 'bin')
 
 
-SIZE = 4096
+SIZE = 32768
+N_DISK = 8
 
 if __name__ == '__main__':
     init_logger()
@@ -45,10 +47,16 @@ if __name__ == '__main__':
         with open(fpath, 'rb') as fh:
             content = fh.read()
         for raid_type in [RAID4, RAID5, RAID6]:
-            raid = raid_type(4)
+            raid = raid_type(8)
+            start_time = time.time()
             raid.write(content, fname)
+            print("{:10.4f}s during 'write' for raid={} against data={}".format(
+                time.time() - start_time, raid.__class__.__name__, fname))
             size = len(content)
+            start_time = time.time()
             content_raid = raid.read(fname, size)
+            print("{:10.4f}s during 'read'  for raid={} against data={}".format(
+                time.time() - start_time, raid.__class__.__name__, fname))
             assert content == content_raid
             # error_index = 2
             # raid.recover(fname, error_index)

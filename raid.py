@@ -31,19 +31,35 @@ class RAID(object):
         """
         return os.path.join(self._disk_path, config.disk_prefix + str(disk_index), fname)
 
+    def __read_impl(self, excluded, fpath):
+        if excluded:
+            return list()
+        return utils.read_content(fpath)
+
+    def __is_excluded(self, i, exclude):
+        if (isinstance(exclude, int) and i == exclude) or (isinstance(exclude, list) and i in exclude):
+            return True
+        return False
+
     def _read_n(self, fname, N, exclude=None):
         """
         generate nparray with dtype=BYTE_TYPE
         :param fname:
         :return: ndarray with shape=(n, length)
         """
-        content_list = []
-        for i in range(N):
-            if (isinstance(exclude, int) and i == exclude) or (isinstance(exclude, list) and i in exclude):
-                content_list.append(list())
-            else:
-                fpath = self.get_real_name(i, fname)
-                content_list.append(utils.read_content(fpath))
+        excluded_list = [self.__is_excluded(i, exclude) for i in range(N)]
+        fpath_list = [self.get_real_name(i, fname) for i in range(N)]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=N) as executor:
+            content_list = list(executor.map(self.__read_impl, excluded_list, fpath_list))
+        ######
+        # content_list = []
+        # for i in range(N):
+        #     if (isinstance(exclude, int) and i == exclude) or (isinstance(exclude, list) and i in exclude):
+        #         content_list.append(list())
+        #     else:
+        #         fpath = self.get_real_name(i, fname)
+        #         content_list.append(utils.read_content(fpath))
+        ######
         get_logger().info(content_list)
         length = len(sorted(content_list, key=len, reverse=True)[0])
         # list of bytes (int) list
@@ -53,6 +69,7 @@ class RAID(object):
             byte_list.append(current_str_list)
         # bytes array
         byte_nparray = np.array(byte_list, dtype=self.BYTE_TYPE)
+        get_logger().info(byte_nparray)
         return byte_nparray
 
     def _gen_ndarray_from_content(self, content, num):
@@ -77,10 +94,14 @@ class RAID(object):
         str_list = [chr(b) for b in real_write_content]
         return ''.join(str_list)
 
+    def __write_impl(self, fpath, write_array):
+        content = self._1darray_to_str(write_array)
+        utils.write_content(fpath, content)
+
     def _write_n(self, fname, write_array, N):
         fpath_list = [self.get_real_name(i, fname) for i in range(N)]
         with concurrent.futures.ThreadPoolExecutor(max_workers=N) as executor:
-            executor.map(utils.write_content, fpath_list, write_array)
+            executor.map(self.__write_impl, fpath_list, write_array)
 
     # def _write_n(self, fname, write_array, N):
     #     r"""
