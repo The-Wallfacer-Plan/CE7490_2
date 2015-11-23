@@ -1,6 +1,8 @@
 import os
 from itertools import repeat
 
+import concurrent
+import concurrent.futures
 import numpy as np
 
 import config
@@ -36,7 +38,7 @@ class RAID(object):
         :return: ndarray with shape=(n, length)
         """
         content_list = []
-        for i in xrange(N):
+        for i in range(N):
             if (isinstance(exclude, int) and i == exclude) or (isinstance(exclude, list) and i in exclude):
                 content_list.append(list())
             else:
@@ -76,19 +78,24 @@ class RAID(object):
         return ''.join(str_list)
 
     def _write_n(self, fname, write_array, N):
-        r"""
-        doesn't care about trailing '\x0'
-        :param fname:
-        :param write_array:
-        :return:
-        """
-        get_logger().info('write_array:\n{}'.format(write_array))
-        # write N
-        assert write_array.shape[0] == N
-        for i in range(N):
-            fpath_i = self.get_real_name(i, fname)
-            content_i = self._1darray_to_str(write_array[i])
-            utils.write_content(fpath_i, content_i)
+        fpath_list = [self.get_real_name(i, fname) for i in range(N)]
+        with concurrent.futures.ThreadPoolExecutor(max_workers=N) as executor:
+            executor.map(utils.write_content, fpath_list, write_array)
+
+    # def _write_n(self, fname, write_array, N):
+    #     r"""
+    #     doesn't care about trailing '\x0'
+    #     :param fname:
+    #     :param write_array:
+    #     :return:
+    #     """
+    #     get_logger().info('write_array:\n{}'.format(write_array))
+    #     # write N
+    #     assert write_array.shape[0] == N
+    #     for i in range(N):
+    #         fpath_i = self.get_real_name(i, fname)
+    #         content_i = self._1darray_to_str(write_array[i])
+    #         utils.write_content(fpath_i, content_i)
 
     def check(self, byte_ndarray):
         raise NotImplementedError

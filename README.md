@@ -1,17 +1,17 @@
-data types:
+data types  
 - text
 - binary
 
-operations:
+operations  
 - read --> check
 - write
 - recover
 
-predefined:
-- dir locations (abstract nodes)
+predefined  
+- dir locations + files
 - N stripes + 2 parities
 
-requirements:
+requirements  
 x find which disk is corrupted
 x recover 2-disk case
 x mutable files

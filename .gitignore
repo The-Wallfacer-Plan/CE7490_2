@@ -117,3 +117,4 @@ crashlytics-build.properties
 /experiments/
 /RAID*/
 /file*.dat
+test.py
