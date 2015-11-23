@@ -20,6 +20,9 @@ class GF(object):
             self.init_generator()
 
     def multiply(self, first, second):
+        assert type(second) in [int, BitVector]
+        if isinstance(second, int):
+            second = BitVector(intVal=second)
         return first.gf_multiply_modular(second, self.modulus, self.N)
 
     def log_generator(self, result):

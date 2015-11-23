@@ -37,6 +37,7 @@ def starter():
 
 
 SIZE = 32768
+SIZE = 4096
 N_DISK = 8
 
 if __name__ == '__main__':

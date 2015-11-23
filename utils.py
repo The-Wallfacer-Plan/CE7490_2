@@ -5,7 +5,6 @@ import operator
 import os
 
 import numpy as np
-from BitVector import BitVector
 
 import config
 # noinspection PyPep8Naming
@@ -51,12 +50,12 @@ def gf_1darray_add(A1, A2):
 
 def gf_a_multiply_list(a, l):
     """
-    :param a: BitVector type
+    :param a: scala type
     :param l:
     :return: list of int
     """
     gf = GF()
-    return [gf.multiply(BitVector(intVal=i), a).int_val() for i in l]
+    return [gf.multiply(int(i), a).int_val() for i in l]
 
 
 def gen_p(data_ndarray, ndim):
@@ -90,7 +89,7 @@ def gen_q(data_ndarray, ndim):
     for _1darray in transposed:
         bv_list = []
         for i, arr_val in enumerate(_1darray):
-            res_i = gf.multiply(gf.generator[i % gf.circle], BitVector(intVal=arr_val))
+            res_i = gf.multiply(gf.generator[i % gf.circle], int(arr_val))
             # print('i={}, arr_val={}, res_i={}'.format(i, arr_val, res_i))
             bv_list.append(res_i)
             # map(lambda i: print(i), bv_list)
