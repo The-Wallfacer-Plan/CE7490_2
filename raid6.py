@@ -5,7 +5,7 @@ import numpy as np
 
 import config
 import utils
-from gf8 import GF
+from ff8 import GF
 from log_helper import init_logger, get_logger
 from raid import RAID
 
@@ -208,12 +208,11 @@ if __name__ == '__main__':
     r6 = RAID6(8)
     original_content = b'good_morning\x03_sir_yes\x01\x02'
     # original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
-    # data_fname = 'good.dat'
-    data_fname = 'data1'
+    data_fname = 'my.dat'
     # fpath = os.path.join(config.root, data_fname)
     # with open(fpath, 'rb') as fh:
     #     original_content = fh.read()
-    r6.write(original_content, data_fname)
+    # r6.write(original_content, data_fname)
     # error_index = 0
     # r6.recover_d_or_p(data_fname, error_index)
     # r6.recover_d_p(data_fname, 1)

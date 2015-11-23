@@ -36,8 +36,7 @@ def starter():
     gen_rnd_file('data2', SIZE, 'bin')
 
 
-SIZE = 32768
-SIZE = 4096
+SIZE = 3276800
 N_DISK = 8
 
 if __name__ == '__main__':

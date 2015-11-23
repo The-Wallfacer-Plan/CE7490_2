@@ -3,7 +3,6 @@ from __future__ import print_function
 
 from functools import reduce
 
-
 # constants used in the multGF2 function
 from log_helper import get_logger, init_logger
 
@@ -49,8 +48,34 @@ class GF(object):
             res = self.multiply(res, base)
         assert len(self.generator) == self.circle
         for g in self.generator:
-            get_logger().warning('{:0{width}{base}}'.format(g, base='x', width=2))
+            get_logger().info('{:0{width}{base}}'.format(g, base='x', width=2))
 
+    def log_generator(self, result):
+        assert isinstance(result, int)
+        for i in range(self.circle):
+            if self.generator[i] == result:
+                return i
+
+    def Axy(self, x, y):
+        g_y_sub_x = self.generator[(y - x) % self.circle]
+        _base = g_y_sub_x ^ 1
+        second = self.power(_base, -1)
+        return self.multiply(g_y_sub_x, second)
+
+    def Bxy(self, x, y):
+        g_neg_x = self.generator[(-x) % self.circle]
+        g_y_sub_x = self.generator[(y - x) % self.circle]
+        _base = g_y_sub_x ^ 1
+        second = self.power(_base, -1)
+        return self.multiply(g_neg_x, second)
+
+    def power(self, a, n):
+        n %= self.circle  # n is guaranteed >=0 after modular
+        while True:
+            if n == 0:
+                return res
+            n -= 1
+            res = self.multiply(res, a)
 
     @staticmethod
     def i2P(sInt):
@@ -61,74 +86,3 @@ class GF(object):
 if __name__ == '__main__':
     init_logger()
     gf8 = GF()
-
-
-#######################################
-
-mask1 = mask2 = polyred = None
-
-
-def setGF2(degree, irPoly):
-    """Define parameters of binary finite field GF(2^m)/g(x)
-       - degree: extension degree of binary field
-       - irPoly: coefficients of irreducible polynomial g(x)
-    """
-    print('setGF2: n={}, F={:0{width}b}({})'.format(degree, irPoly, irPoly, width=degree + 1))
-
-    def i2P(sInt):
-        """Convert an integer into a polynomial"""
-        return [(sInt >> i) & 1 for i in reversed(range(sInt.bit_length()))]
-
-    global mask1, mask2, polyred
-    mask1 = mask2 = 1 << degree
-    mask2 -= 1
-    polyred = reduce(lambda x, y: (x << 1) + y, i2P(irPoly)[1:])
-    # print(polyred)
-
-
-def addGF2(p1, p2):
-    return p1 ^ p2
-
-
-def subGF2(p1, p2):
-    return p1 ^ p2
-
-
-def multGF2(p1, p2):
-    """Multiply two polynomials in GF(2^m)/g(x)"""
-    p = 0
-    while p2:
-        if p2 & 1:
-            p ^= p1
-        p1 <<= 1
-        if p1 & mask1:
-            p1 ^= polyred
-        p2 >>= 1
-    return p & mask2
-
-
-op_fn_dict = {
-    'x': multGF2,
-    '+': subGF2,
-    '-': addGF2
-}
-
-
-def evaluate(p1, op, p2):
-    fn = op_fn_dict[op]
-    res = fn(p1, p2)
-    print('{:0{width}b} {} {:0{width}b} = {:0{width}b}'.format(p1, op, p2, res, width=N + 1))
-
-
-def run():
-    global N
-    N = 8
-    F = 0b100011101
-    setGF2(N, F)
-    a = 0b000000010
-    print(multGF2(a, a))
-    evaluate(a, 'x', a)
-
-
-if __name__ == '__main__':
-    run()

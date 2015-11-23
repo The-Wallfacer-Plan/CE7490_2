@@ -8,7 +8,7 @@ import numpy as np
 
 import config
 # noinspection PyPep8Naming
-from gf8 import GF
+from ff8 import GF
 from log_helper import init_logger, get_logger
 
 
@@ -93,7 +93,10 @@ def gen_q(data_ndarray, ndim):
             # print('i={}, arr_val={}, res_i={}'.format(i, arr_val, res_i))
             bv_list.append(res_i)
             # map(lambda i: print(i), bv_list)
-        q_value = reduce(operator.xor, bv_list).int_val()
+        q_value = reduce(operator.xor, bv_list)
+        # for BitVector
+        if not isinstance(q_value, int):
+            q_value = q_value.int_val()
         q_list.append(q_value)
     arr = np.array(q_list, ndmin=ndim, dtype=config.BYTE_TYPE)
     get_logger().info("arr={}".format(arr))
