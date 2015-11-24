@@ -15,9 +15,11 @@ class RAID4(RAID):
         super(RAID4, self).__init__(N)
 
     def check(self, byte_ndarray):
+        """integrity check; only need to check p"""
         utils.check_data_p(byte_ndarray)
 
     def read(self, fname, size):
+        """read involves check"""
         byte_ndarray = self._read_n(fname, self.N)
         # check
         self.check(byte_ndarray)
@@ -28,6 +30,7 @@ class RAID4(RAID):
         return ''.join(flat_str_list)
 
     def recover(self, fname, index):
+        """recover corrupted disk (index)"""
         assert 0 <= index < self.N
         byte_ndarray = self._read_n(fname, self.N, exclude=index)
         parity = utils.gen_p(byte_ndarray, ndim=1)
@@ -39,6 +42,8 @@ class RAID4(RAID):
         self.check(read_ndarray)
 
     def __gen_raid_array(self, byte_ndarray):
+        """generate full ndarray from raw data ndarray
+        """
         # calculate parity and append
         parity = utils.gen_p(byte_ndarray, ndim=2)
         write_array = np.concatenate([byte_ndarray, parity])
@@ -46,6 +51,9 @@ class RAID4(RAID):
         return write_array
 
     def write(self, content, fname):
+        """
+        write content into fname(RAID4 system)
+        """
         byte_ndarray = self._gen_ndarray_from_content(content, self.N - 1)
         write_array = self.__gen_raid_array(byte_ndarray)
         self._write_n(fname, write_array, self.N)

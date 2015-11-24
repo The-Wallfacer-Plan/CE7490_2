@@ -14,6 +14,13 @@ from raid6 import RAID6
 
 
 def gen_rnd_file(fname, size, content_type):
+    """
+    randomly generate data chunk
+    :param fname: the name denoting the data
+    :param size: the size of the data chunk
+    :param content_type: can be 'text' or others; if it's 'text', make the chunk only contain ascii letters
+    :return:
+    """
     if content_type == 'text':
         # noinspection PyUnusedLocal
         content = ''.join([random.choice(string.ascii_letters) for i in xrange(size)])
@@ -30,6 +37,10 @@ def gen_rnd_file(fname, size, content_type):
 
 # noinspection PyUnusedLocal
 def starter():
+    """
+    a starter function for random data generation
+    :return:
+    """
     if not os.path.isdir(config.root):
         os.mkdir(config.root)
     gen_rnd_file('data1', SIZE, 'text')

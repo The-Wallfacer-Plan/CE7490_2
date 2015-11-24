@@ -13,12 +13,22 @@ from log_helper import init_logger, get_logger
 
 
 class RAIDCheckError(Exception):
+    """
+    used for general RAID check error
+    """
+
     def __init__(self, msg):
         super(RAIDCheckError, self).__init__(msg)
 
 
 # noinspection PyPep8Naming
 def setup_disks(root_path, N):
+    """
+    "initialize" RAID disks
+    :param root_path: "disk location"
+    :param N: number of total disks
+    :return:
+    """
     if not os.path.isdir(root_path):
         os.mkdir(root_path)
     for i in xrange(N):
@@ -29,11 +39,13 @@ def setup_disks(root_path, N):
 
 
 def read_content(fpath):
+    """lowest read"""
     with open(fpath, 'rb') as fh:
         return fh.read()
 
 
 def write_content(fpath, content):
+    """lowest write"""
     with open(fpath, 'wb') as fh:
         fh.write(content)
 
@@ -41,6 +53,7 @@ def write_content(fpath, content):
 # noinspection PyMethodMayBeStatic
 def gf_1darray_add(A1, A2):
     """
+    add operation for 2 same shaped ndarray
     :param A1:
     :param A2:
     :return: 1darray
@@ -50,6 +63,7 @@ def gf_1darray_add(A1, A2):
 
 def gf_a_multiply_list(a, l):
     """
+    multiplication of a and l
     :param a: scala type
     :param l:
     :return: list of int
@@ -60,6 +74,7 @@ def gf_a_multiply_list(a, l):
 
 def gen_p(data_ndarray, ndim):
     """
+    generate res from data_ndarray with XOR
     :param ndim: ndarray dimension
     :param data_ndarray: the data array
     :return: the parity of the data_ndarray
@@ -77,6 +92,7 @@ def gen_p(data_ndarray, ndim):
 
 def gen_q(data_ndarray, ndim):
     """
+    generate q using GF^8
     :param data_ndarray: the data ndarray
     :param ndim: real dim
     :return: q_ndarray with shape=(1, byte_ndarray.shape[1])
@@ -102,6 +118,7 @@ def gen_q(data_ndarray, ndim):
 
 
 def check_data_p(byte_ndarray):
+    """check p integrity, byte_ndarray is whole data ndarray; so XOR should be all zeros"""
     computed = gen_p(byte_ndarray, ndim=1)
     if np.count_nonzero(computed) != 0:
         msg = 'xor of arrays not all zeros, computed={}'.format(computed)
@@ -109,6 +126,12 @@ def check_data_p(byte_ndarray):
 
 
 def check_q(data_ndarray, q_ndarray):
+    """
+    check data_ndarray against q_ndarray
+    :param data_ndarray:
+    :param q_ndarray:
+    :return:
+    """
     computed = gen_q(data_ndarray, ndim=2)
     if not np.array_equal(computed, q_ndarray):
         msg = 'Q check failed, q_ndarray={}, computed={}'.format(q_ndarray, computed)
@@ -116,6 +139,7 @@ def check_q(data_ndarray, q_ndarray):
 
 
 def simple_test(raid_level, test_recovery=True):
+    """a simple test function"""
     init_logger()
     raid = raid_level(4)
     data_fname = 'good.dat'

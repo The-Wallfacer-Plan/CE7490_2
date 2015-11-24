@@ -19,9 +19,15 @@ class RAID6(RAID):
     def __init__(self, N):
         assert 4 <= N
         super(RAID6, self).__init__(N)
+        # gf object
         self.gf = GF()
 
     def check(self, byte_ndarray):
+        """
+        check involves p and q
+        :param byte_ndarray: all ndarray including p and q
+        :return:
+        """
         # check p
         data_p_ndarray = byte_ndarray[:-1]
         utils.check_data_p(data_p_ndarray)
@@ -31,6 +37,9 @@ class RAID6(RAID):
         utils.check_q(data_ndarray, q_ndarray)
 
     def read(self, fname, size):
+        """
+        read size chunk from fname(RAID6 system)
+        """
         byte_ndarray = self._read_n(fname, self.N)
         self.check(byte_ndarray)
         data_ndarray = byte_ndarray[:-2]
@@ -39,9 +48,16 @@ class RAID6(RAID):
         return ''.join(flat_str_list)
 
     def recover(self, fname, exclude):
+        """
+        since there are different cases, we raise an error indicating it should not be called
+        """
         raise NotImplementedError("not implemented; split into several cases")
 
     def _get_corrupted_data_disk(self, P_star, Q_star):
+        """
+        from P_star and Q_star, find the corrupted data disk index
+        procondition: P_star!={00}, Q_star!={00} (in vector sense)
+        """
         p0 = int(P_star[0][0])
         q0 = int(Q_star[0][0])
         log_p0 = self.gf.log_generator(p0)
@@ -51,8 +67,8 @@ class RAID6(RAID):
     def detect_corruption(self, fname):
         """
         single disk corruption detection
-        :param fname:
-        :return: corrupted disk index
+        :param fname: data name in RAID6 system
+        :return: corrupted disk index; for p, self.N-2; for q, self.N-1
         """
         # all disks, including P, Q
         byte_ndarray = self._read_n(fname, self.N)
@@ -87,8 +103,8 @@ class RAID6(RAID):
     def recover_d_or_p(self, fname, index):
         """
         recover data drive or 'p' drive, simply using XOR
-        :param fname:
-        :param index:
+        :param fname: data name
+        :param index: data disk or p disk index
         :return:
         """
         assert 0 <= index < self.N - 1
@@ -103,8 +119,8 @@ class RAID6(RAID):
 
     def recover_q(self, fname):
         """
-        recover 'q' drive, recompute; no need to check here
-        :param fname:
+        recover 'q' drive, recompute
+        :param fname: data name
         :return:
         """
         byte_ndarray = self._read_n(fname, self.N - 2)
@@ -119,8 +135,8 @@ class RAID6(RAID):
     def recover_d_q(self, fname, index):
         """
         recover data/'p' drive (index) and 'q' drive: firstly using XOR to recover data drive, then recompute q
-        :param fname:
-        :param index:
+        :param fname: data name
+        :param index: corrupted data disk index
         :return:
         """
         self.recover_d_or_p(fname, index)
@@ -129,9 +145,9 @@ class RAID6(RAID):
     def recover_2d(self, fname, x, y):
         """
         recover data drives (x and y)
-        :param fname:
-        :param x: corrupted disk index
-        :param y: corrupted disk index
+        :param fname: data name
+        :param x: corrupted data disk index
+        :param y: corrupted data disk index
         :return:
         """
         assert 0 <= x < self.N - 2
@@ -164,8 +180,8 @@ class RAID6(RAID):
     def recover_d_p(self, fname, index):
         """
         recover data drive (index) and 'p' drive
-        :param fname:
-        :param index:
+        :param fname: data name
+        :param index: data disk index
         :return:
         """
         assert 0 <= index < self.N - 2
@@ -195,6 +211,9 @@ class RAID6(RAID):
         utils.write_content(P_path, P_content)
 
     def write(self, content, fname):
+        """
+        write content to fname(in RAID6 system)
+        """
         byte_ndarray = self._gen_ndarray_from_content(content, self.N - 2)
         p_ndarray = utils.gen_p(byte_ndarray, ndim=2)
         q_ndarray = utils.gen_q(byte_ndarray, ndim=2)
