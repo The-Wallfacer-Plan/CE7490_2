@@ -3,7 +3,7 @@
 In this section, we will discuss how we implemented the RAID 6 to meet the basic requirement of the project.
 We implement our project in Python-2.7.9, with the help of NumPy-1.10\footnote{\url{http://www.numpy.org/}} modules. Our implementation is available at GitHub \footnote{\url{https://github.com/HongxuChen/ds_assign2}}.
 
-We implement 3 RAID types: RAID4, RAID5, and RAID6. We use folders in a typical filesystem to simulate these independent disks. We also simplify the data access procedure; that is to say, instead of maintaining the offset of each blocks, we specify a filename for each chunk of data. This is reasonable since the names can be viewed as a starting point of each data set within each disk. The input data are randomly generated with given byte length; and in Unix like systems, this is like generating data from \verb|/dev/urandom|. As a result, the experiment structure.
+We implement 3 RAID types: RAID4, RAID5, and RAID6. We use folders in a typical filesystem to simulate these independent disks. We also simplify the data access procedure; that is to say, instead of maintaining the offset of each blocks, we specify a filename for each chunk of data. This is reasonable since the names can be viewed as a starting point of each data set within each disk. The input data are randomly generated with given byte length; and in Unix like systems, this is like generating data from \verb|/dev/urandom|. As a result, the experiment structure is similar to the following.
 
 \begin{verbatim}
 ├── RAID4
@@ -29,7 +29,7 @@ The disk number can be configured with parameter $N_{a}$: in RAID4, $N\ge 3$ and
 
 For all of the implemented RAIDs, we provide \verb|read| and \verb|write| interfaces. The \verb|write| operation firstly divides the $L$ bytes of data into $N_d$ parts. In case the data length is not all the same, we fill in trailing zeros. 
 
-The integrity \verb|check| is done internally during each \verb|read|. The \verb|read| operation specifies the data starting position (simulated by "file name") and its size. The size is given as a parameter since there is no way to distinguish the trailing from regular data bytes unless storing data block size information, which, however, will make the disk corruption detection and recovery difficult.
+The integrity \verb|check| is done internally during each \verb|read|. The \verb|read| operation specifies the data starting position (simulated by ``file name'') and its size. The size is given as a parameter since there is no way to distinguish the trailing from regular data bytes unless storing data block size information, which, however, will make the disk corruption detection and recovery difficult.
 
 \subsection{Data Recovery}
 
@@ -82,10 +82,10 @@ Here $\mathbf{P}_{xy}$ and $\mathbf{Q}_{xy}$ are computed parity as if $\mathbf{
 
 If it is known that there is only one disk corruption in RAID6, we can detect which disk actually has data failure. Suppose that the unknown failed disk is $z$ ($0\leq z\leq n\leq 255$), and denote $\mathbf{X}_z$ to be the incorrect data in Disk $z$; $\mathbf{P}'$ and $\mathbf{Q}'$ is the computed parities against data disks with $\mathbf{X}_z$. We firstly compute 2 additional parities:
 \begin{equation}
-	\Pstar = \mathbf{P} + \mathbf{P}'
+  \Pstar = \mathbf{P} + \mathbf{P}'=\mathbf{D}_z+\mathbf{X}_z
 \end{equation}
 \begin{equation}
-	\Qstar = \mathbf{Q} + \mathbf{Q}'
+  \Qstar = \mathbf{Q} + \mathbf{Q}'=g^{z}\cdot (\mathbf{D}_z+\mathbf{X}_z)=g^z\cdot \mathbf{\Pstar}
 \end{equation}
 
 It turns out that we can conclude the disk corruption from the zeros of them, which is depicted in table below.
@@ -110,7 +110,7 @@ In this sense, we can tell whether $P$ or $Q$ disk has corrupted. For data disk 
 	z = log_p{\Qstar/\Pstar} = log_{g}\Qstar\ominus log_{g}\Pstar
 \end{equation}
 
-Here $log_{g}v$ is the reverse operation of the power of $g$ (e.g., $i=log_{g}v\!\iff\!v=g^i$). Additionally, $\ominus$ is the same as $\oplus$ in $\mathbf{GF}(2^8)$.
+Here $log_{g}v$ is the reverse operation of the power of $g$ (e.g., $i=log_{g}v\!\iff\!v=g^i$). Additionally, $\ominus$ is the same as $\oplus$ in $\mathbf{GF}(2^8)$ since they are both XOR operations.
 
 If two drives fail or are corrupted at the same time, RAID 6 is only capable to recover the failing drive given the which one of the drive has failed. However, it cannot auto-detect the broken or corrupted drive without the help of other checking mechanisms. Trying to recover when two disks corrupts will result in a possible third corruption in a good drive. Since it is impossible to detect two corruptions, the auto-recovery functionality will assumes that there is only one drive corruption. Therefore, it is a good practice to determine the number of the failing drive first before choose to use the auto-recovery function of RAID.
 
