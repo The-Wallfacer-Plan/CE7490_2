@@ -3,9 +3,21 @@
 In this section, we will discuss the basic features in RAID 6, the block level striping with double distributed parity architecture.
 
 \subsection{Two Fault Drive Tolerance}
-Unlike other RAID architectures, which only allow one drive falls happen at a time, RAID 6 can tolerate two drives break down at the same time. To achieve this, RAID 6 will calculate two parity block for a chunk of given data. The first parity block, named P block, is the exclusive or for all the data block. The second parity block, named Q block, requires much more computation. It is defined as the following formula.
+Unlike other RAID architectures, which only allow one drive falls happen at a time, RAID 6 can tolerate two drives break down at the same time. To achieve this, RAID 6 will calculate two parity blocks for a chunk of given data. The first parity block, named $P$ block, is the ``exclusive or'' ($\oplus$) for all the data block. 
 
-where g is one of the generator in the Galois field, D is the data block for the give chunk, and ‘.’ is the multiplication in the Galois field. With the help of two parity block, when two drives fail at the same time, the lost data can be retrieved back from the rest of drives. The detail retrieval process will be discussed in the implementation section.
+\begin{equation}\label{eq:gen_p}
+	\mathbf{P = D_0 \oplus D_1 \oplus D_2 \oplus \ldots \oplus D_{n-1}}
+\end{equation}
+
+The second parity block, named $Q$ block, requires much more computation. It is defined as the following formula.
+
+\begin{equation}\label{eq:gen_q}
+	\mathbf{Q} = g^0\cdot \mathbf{D_0} \oplus g^1\cdot \mathbf{D_1} \oplus g^2\cdot \mathbf{D_2} \oplus \ldots \oplus g^{n-1}\cdot \mathbf{D_{n-1}}
+\end{equation}
+
+Here ($\cdot$) is the multiplication operation defined in $\mathbf{GF}(2^8)$ with $\mathrm{m}=100011101$ (corresponding to the irreducible polynomial $x^8+x^4+x^3+x^2+1$) as the modulus. $g$ is the generator and $g^{i}$ is defined as $\underbrace{g\cdot g\ldots g}_{i}$. The addition operation in $\mathbf{GF}(2^8)$ is also XOR ($\oplus$).
+
+With the help of two parity blocks, when two drives fail at the same time, the lost data can be retrieved back from the rest of drives. The detailed retrieval process will be discussed in the implementation section.
 
 
 \subsection{Balanced Drive Load}
