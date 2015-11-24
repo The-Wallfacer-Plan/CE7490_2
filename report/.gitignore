@@ -1,3 +1,9 @@
 .*.swp
 .texpadtmp/
 main.pdf
+
+main.aux
+main.fdb_latexmk
+main.fls
+main.out
+main.synctex.gz

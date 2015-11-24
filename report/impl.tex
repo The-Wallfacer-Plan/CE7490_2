@@ -1,4 +1,4 @@
-\subsection{Implementation}
+\section{Implementation}
 
 In this section, we will discuss how we implemented the RAID 6 to meet the basic requirement of the project.
 We implement our project in Python-2.7.9, with the help of NumPy-1.10\footnote{\url{http://www.numpy.org/}} modules. Our implementation is available at GitHub \footnote{\url{https://github.com/HongxuChen/ds_assign2}}.
@@ -23,7 +23,7 @@ We implement 3 RAID types: RAID4, RAID5, and RAID6. We use folders in a typical 
 
 \end{verbatim}
 
-The disk number can be configured with parameter $N_{a}$: in RAID4, $N\ge 3$ and $N_{d}=N_{a}-1$ preceding disks are used as data disks with the last one as parity disk; for RAID5, $N_{d}=N_{a}\ge 3$ and the parity byte is distributed among all the disks;  for RAID6, $N_{a}\ge 4$, with $N_{d}=N_{a}-2$ data disks and 1 $P$ disk and 1 $Q$ disk. The value of $N_{d}$ can be extremely large in principle, however for RAID6, since we use $GF^8$ and use byte as the unit, $N_{d}$ is supposed to be $\le 255$.
+The disk number can be configured with parameter $N_{a}$: in RAID4, $N\ge 3$ and $N_{d}=N_{a}-1$ preceding disks are used as data disks with the last one as parity disk; for RAID5, $N_{d}=N_{a}\ge 3$ and the parity byte is distributed among all the disks;  for RAID6, $N_{a}\ge 4$, with $N_{d}=N_{a}-2$ data disks and 1 $P$ disk and 1 $Q$ disk. The value of $N_{d}$ can be extremely large in principle, however for RAID6, since we use $\mathbf{GF}2^8$ and use byte as the unit, $N_{d}$ is supposed to be $\le 255$.
 
 \subsection{Write and Read Operations}
 
@@ -88,8 +88,10 @@ If it is known that there is only one disk corruption in RAID6, we can detect wh
 	\Qstar = \mathbf{Q} + \mathbf{Q}'
 \end{equation}
 
-It turns out that we can conclude the disk corruption from the zeros of them, which is depicted in Table \ref{tbl:detect}.
+It turns out that we can conclude the disk corruption from the zeros of them, which is depicted in table below.
 
+\begin{table}[H]
+  \caption{Drive Corruption Detection}
 \begin{center}
 \def\tmp#1{\multicolumn{1}{|l|}{#1}}
 \begin{tabular}{l|c|c|} \cline{2-3}
@@ -98,9 +100,9 @@ It turns out that we can conclude the disk corruption from the zeros of them, wh
 \tmp{$\P$ drive corruption} & $\not= \g{00}$ & $= \g{00}$ \\ \hline
 \tmp{$\Q$ drive corruption} & $= \g{00}$ & $\not= \g{00}$ \\ \hline
 \tmp{Data drive corruption} & $\not= \g{00}$ & $\not= \g{00}$ \\ \hline
-\label{tbl:detect}
 \end{tabular}
 \end{center}
+\end{table}
 
 In this sense, we can tell whether $P$ or $Q$ disk has corrupted. For data disk corruption, we can find the value of $z$ by Equation \ref{eq:detect_data}.
 
@@ -110,6 +112,5 @@ In this sense, we can tell whether $P$ or $Q$ disk has corrupted. For data disk 
 
 Here $log_{g}v$ is the reverse operation of the power of $g$ (e.g., $i=log_{g}v\!\iff\!v=g^i$). Additionally, $\ominus$ is the same as $\oplus$ in $\mathbf{GF}(2^8)$.
 
-
-
+If two drives fail or are corrupted at the same time, RAID 6 is only capable to recover the failing drive given the which one of the drive has failed. However, it cannot auto-detect the broken or corrupted drive without the help of other checking mechanisms. Trying to recover when two disks corrupts will result in a possible third corruption in a good drive. Since it is impossible to detect two corruptions, the auto-recovery functionality will assumes that there is only one drive corruption. Therefore, it is a good practice to determine the number of the failing drive first before choose to use the auto-recovery function of RAID.
 
