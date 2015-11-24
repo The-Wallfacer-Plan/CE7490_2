@@ -1,15 +1,37 @@
 \subsection{Implementation}
 
 In this section, we will discuss how we implemented the RAID 6 to meet the basic requirement of the project.
-We implement our project in Python2.7.9, with the help of NumPy-1.10\footnote{NumPy project homepage: \url{http://www.numpy.org/}} modules.
+We implement our project in Python-2.7.9, with the help of NumPy-1.10\footnote{\url{http://www.numpy.org/}} modules. Our implementation is available at GitHub \footnote{\url{https://github.com/HongxuChen/ds_assign2}}.
 
-We implement 3 RAID types: RAID4, RAID5, and RAID6. We use folders in a typical filesystem to simulate these independent disks. We also simplify the data access procedure; that is to say, instead of maintaining the offset of each blocks, we specify a filename for each chunk of data. This is reasonable since the names can be viewed as a starting point of each data set within each disk. The input data are randomly generated with given byte length; and in Unix like systems, this is like generating data from \verb|/dev/urandom|.
+We implement 3 RAID types: RAID4, RAID5, and RAID6. We use folders in a typical filesystem to simulate these independent disks. We also simplify the data access procedure; that is to say, instead of maintaining the offset of each blocks, we specify a filename for each chunk of data. This is reasonable since the names can be viewed as a starting point of each data set within each disk. The input data are randomly generated with given byte length; and in Unix like systems, this is like generating data from \verb|/dev/urandom|. As a result, the experiment structure.
+
+\begin{verbatim}
+├── RAID4
+...
+├── RAID5
+...
+├── RAID6
+│   ├── D0
+│      ├── data1
+│      └── data2
+...
+│   └── D7
+│      ├── data1
+│      └── data2
+├── data1
+└── data2
+
+\end{verbatim}
 
 The disk number can be configured with parameter $N_{a}$: in RAID4, $N\ge 3$ and $N_{d}=N_{a}-1$ preceding disks are used as data disks with the last one as parity disk; for RAID5, $N_{d}=N_{a}\ge 3$ and the parity byte is distributed among all the disks;  for RAID6, $N_{a}\ge 4$, with $N_{d}=N_{a}-2$ data disks and 1 $P$ disk and 1 $Q$ disk. The value of $N_{d}$ can be extremely large in principle, however for RAID6, since we use $GF^8$ and use byte as the unit, $N_{d}$ is supposed to be $\le 255$.
 
-For all of the implemented RAIDs, we provide \verb|read| and \verb|write| interfaces. The write operation firstly divides the $L$ bytes of data into $N_d$ parts. In case the data length is not all the same, we fill in trailing zeros. 
+\subsection{Write and Read Operations}
 
-The integrity check is done internally during each read. The read operation specifies the data starting position (simulated by "file name") and its size. The size is given as a parameter since there is no way to distinguish the trailing from regular data bytes unless storing data block size information, which, however, will make the disk corruption detection and recovery difficult.
+For all of the implemented RAIDs, we provide \verb|read| and \verb|write| interfaces. The \verb|write| operation firstly divides the $L$ bytes of data into $N_d$ parts. In case the data length is not all the same, we fill in trailing zeros. 
+
+The integrity \verb|check| is done internally during each \verb|read|. The \verb|read| operation specifies the data starting position (simulated by "file name") and its size. The size is given as a parameter since there is no way to distinguish the trailing from regular data bytes unless storing data block size information, which, however, will make the disk corruption detection and recovery difficult.
+
+\subsection{Data Recovery}
 
 For RAID4 and RAID5, we implement data recovery functionality given the corrupted disk index is known. 
 
@@ -18,9 +40,9 @@ For RAID6, we separate the recovery scenarios into the following cases:
 \begin{enumerate}
 	\item\label{itm:r_d_OR_p} Recover data or $P$ disk (\verb|recover_d_or_p|)
 	\item \label{itm:r_q} Recover $Q$ disk (\verb|recover_q|)
-	\item \label{itm:r_d_q} Recover both data disk (or $P$ disk) and $Q$ disk (\verb|recover_d_q|)
+	\item \label{itm:r_d_q} Recover 1 data disk (or $P$ disk) and $Q$ disk (\verb|recover_d_q|)
 	\item \label{itm:r_2d} Recover 2 data disks (\verb|recover_2d|)
-	\item \label{itm:r_d_p} Recover both data disk and $P$ disk (\verb|recover_d_p|)
+	\item \label{itm:r_d_p} Recover 1 data disk and $P$ disk (\verb|recover_d_p|)
 \end{enumerate}
 
 It is easy to recovery one disk: for data disk or $P$ disk, we simply calculate the XOR results of other disks excluding $Q$. For $Q$ disk, all we need to do is to recompute it with Equation (\ref{eq:gen_q}).
@@ -33,9 +55,9 @@ If we lose $\mathbf{D_x}$ \emph{and} $P$ data (Case \ref{itm:r_d_p}), we use the
 	\mathbf{D}_x = (\mathbf{Q}_x+\mathbf{Q})\cdot g^{-x}
 \end{equation}
 
-Where $\mathbf{}Q_x$ is the computed $Q$ parity as if $\mathbf{D_x}=\left\{00\right\}$ and for $\mathbf{GF}(2^8)$ we have $g^{-x}=g^{255-x}$. Afterwards, we can get $P$ data.
+Where $\mathbf{}Q_x$ is computed as if $\mathbf{D_x}=\left\{00\right\}$ and for $\mathbf{GF}(2^8)$ we have $g^{-x}=g^{255-x}$. Afterwards, we can get $P$ data.
 
-If we lose 2 data block, namely $\mathbf{D_x}$ and $\mathbf{D_y}$, we use the following results to recover them.
+If we lose 2 data block, namely $\mathbf{D}_x$ and $\mathbf{D}_y$, we use the following results to recover them.
 
 \begin{equation}
 	A = g^{y-x}\cdot (g^{y-x}+\left\{01\right\})^{-1}
@@ -55,6 +77,38 @@ If we lose 2 data block, namely $\mathbf{D_x}$ and $\mathbf{D_y}$, we use the fo
 
 Here $\mathbf{P}_{xy}$ and $\mathbf{Q}_{xy}$ are computed parity as if $\mathbf{D}_x=\left\{00\right\}$ and $\mathbf{D}_y=\left\{00\right\}$.
 
+
+\subsection{Disk Corruption Detection}
+
+If it is known that there is only one disk corruption in RAID6, we can detect which disk actually has data failure. Suppose that the unknown failed disk is $z$ ($0\leq z\leq n\leq 255$), and denote $\mathbf{X}_z$ to be the incorrect data in Disk $z$; $\mathbf{P}'$ and $\mathbf{Q}'$ is the computed parities against data disks with $\mathbf{X}_z$. We firstly compute 2 additional parities:
+\begin{equation}
+	\Pstar = \mathbf{P} + \mathbf{P}'
+\end{equation}
+\begin{equation}
+	\Qstar = \mathbf{Q} + \mathbf{Q}'
+\end{equation}
+
+It turns out that we can conclude the disk corruption from the zeros of them, which is depicted in Table \ref{tbl:detect}.
+
+\begin{center}
+\def\tmp#1{\multicolumn{1}{|l|}{#1}}
+\begin{tabular}{l|c|c|} \cline{2-3}
+& $\Pstar$ & $\Qstar$ \\ \hline
+\tmp{No corruption} & $= \g{00}$ & $= \g{00}$ \\ \hline
+\tmp{$\P$ drive corruption} & $\not= \g{00}$ & $= \g{00}$ \\ \hline
+\tmp{$\Q$ drive corruption} & $= \g{00}$ & $\not= \g{00}$ \\ \hline
+\tmp{Data drive corruption} & $\not= \g{00}$ & $\not= \g{00}$ \\ \hline
+\label{tbl:detect}
+\end{tabular}
+\end{center}
+
+In this sense, we can tell whether $P$ or $Q$ disk has corrupted. For data disk corruption, we can find the value of $z$ by Equation \ref{eq:detect_data}.
+
+\begin{equation}\label{eq:detect_data}
+	z = log_p{\Qstar/\Pstar} = log_{g}\Qstar\ominus log_{g}\Pstar
+\end{equation}
+
+Here $log_{g}v$ is the reverse operation of the power of $g$ (e.g., $i=log_{g}v\!\iff\!v=g^i$). Additionally, $\ominus$ is the same as $\oplus$ in $\mathbf{GF}(2^8)$.
 
 
 

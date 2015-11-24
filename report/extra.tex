@@ -8,19 +8,39 @@ In the real world, the input file is at an arbitrary size. To handle the file wi
 
 \subsection{Supporting Mutable Files}
 
-File mutation can be categorized as two types. The first case is that one bit of file’s content has been change but the file length has remain unchanged. Another case it that, some of the data is inserted into/deleted from the original file so that the length of the file is changed. For the first case we can select the changed byte and re-calculate the corresponding P and Q values. For the second case we need to change the file and calculate all the Ps and Qs for every byte following the inserted/deleted byte in the file.
-In our implementation, when the file is changed, we compare the changed file with the original data copy store across drives, excluding the P and Q values. Once we find the different data, we replace it using the changed value and re-calculate the P and Q values. It is faster than to replace the whole data file and re-calculate the P and Q from the beginning.
+File mutation can be categorized as two types. The first case is that one bit of file’s content has been change but the file length has remain unchanged. Another case it that, some of the data is inserted into/deleted from the original file so that the length of the file is changed. For the first case we can select the changed byte and re-calculate the corresponding $P$ and $Q$ values. For the second case we need to change the file and calculate all the $P$s and $Q$s for every byte following the inserted/deleted byte in the file.
+In our implementation, when the file is changed, we compare the changed file with the original data copy store across drives, excluding the $P$ and $Q$ values. Once we find the different data, we replace it using the changed value and re-calculate the $P$ and $Q$ values. It is faster than to replace the whole data file and re-calculate the P and Q from the beginning.
 
 \subsection{larger set of configurations}
 
-One of the RAID 6 basic configurations is that for every 6 data stripes, we generate 2 additional parity block to store the additional information in order to tolerate the errors (6+2). However, in our implementation, we do allow the RAID 6 to use an $N_d+2$ ($N_d \geq 2$) configuration. We allow the data to be stored across several data drives, as long as the total number of drives exceeded 3. It enable itself to be used in different configurations where the number of drive can vary. For $n = 1$, it is not reasonable to use to additional parity block to tolerate the fault drives. If one would like to do so, he can use RAID 1 twice, which can be faster than RAID 6. The less the number of drives used in the configuration, the higher the percentage of the overhead it generated. Therefore, we recommend to use the configuration $6 + 2$, in which the overhead is relatively low and the overall computation speed is fast.
+One of the RAID 6 basic configurations is that for every 6 data stripes, we generate 2 additional parity block to store the additional information in order to tolerate the errors (6+2). However, in our implementation, we do allow the RAID 6 to use an $N_d+2$ ($N_d \geq 2$) configuration. We allow the data to be stored across several data drives, as long as the total number of drives exceeded 3. It enable itself to be used in different configurations where the number of drive can vary. For $N_d = 1$, it is not reasonable to use to additional parity block to tolerate the fault drives. If one would like to do so, he can use RAID 1 twice, which can be faster than RAID 6. The less the number of drives used in the configuration, the higher the percentage of the overhead it generated. Therefore, we recommend to use the configuration $6 + 2$, in which the overhead is relatively low and the overall computation speed is fast.
 
 
-\subsection{Optimize the computation operations}
+\subsection{Optimization}
 
-The computation for $P$ is straightforward, for one just needs to calculate the exclusive or of the data. In addition, the CPU usually has the corresponding functionality to do exclusive or operation. However, to get $Q$, one needs to invoke Galois field multiplication, which is the most costing part for RAID 6 implementation. Therefore, to use a fast way to perform multiplication is the key to optimize the operations. 
+There are quite a few optimization opportunities for RAID implementations.
 
-In this project, we have used a pre-computed table for looking up the multiplication values. Since we have choose the $GF(2^8)$ as the field, the possible number of multiplication combinations is limited to $256 \times 256$, which is 65536 cases. We have computed all the 65536 values, which is a one-time cost; and store the value in a table. Each time when we need to do the multiplication, we just need to get the corresponding value from the table with the time complexity $O(1)$. The multiplication is not the bottleneck anymore.
+First of all, since we use \textsf{NumPy}'s $N$-dimensional array to store the byte type, we make its data type as minimal as possible so that we don't have to wast time computing leading zeros. Due to the $Q$ disk data calculation and checking involve ($\cdot$) in galois field ($\mathbf{GF}(2^8)$), $numpy.int16$ seems to be proper data type that can be used.
+
+In RAID hardware implementations, the read/write operations are conducted by an intelligent drive controller simultaneously from each component of the independent disk. During our implementation, we also try to make the I/O operations less costly by spawning multiple threads and synchronize them in the main thread.
+
+The largest optimization comes from the parity computations for $P$ and $Q$ disks.
+
+The computation for $P$ is straightforward, for one just needs to calculate the exclusive or of the data. In addition, the CPU usually has the corresponding functionality to do exclusive or operation.
+
+As mentioned in ``The mathematics of RAID-6''\footnote{\url{https://www.kernel.org/pub/linux/kernel/people/hpa/raid6.pdf}}, the biggest problem with RAID-6 is the high CPU cost of computing the $Q$ syndrome. Therefore, to use a fast way to perform multiplication is the key to optimize the operations. We noticed that arbitrary multiplication ($\cdot$) of two elements in galois field is unnecessary since as we limit the generator to be $g=\left\{02\right\}$ we only need to deal with the multiplication with it. This can be improved since the result of \verb|c| multiplication by $\left\{02\right\}$ can be represented by \verb|(c<<1)^((c&0x80)?0x1d:0)|.
+
+In addition, since we use $g=\left\{02\right\}$ frequently, we pre-compute all the distinct values of $g$, that is to say, $GT=\langle g^0, g^1, \ldots, g^{255}\rangle$. The brings us 2 benefits:
+
+\begin{enumerate}
+	\item When computing $g^{x}$, we simply look up $GT$ and get its value. The time complexity is $\Theta(1)$.
+	\item When computing $log_{g}v$, we only need to check in $GT$ which index has the value $v$ and return the index and the time complexity is $\Theta(n)$. Note that here we can also optimize by constructing a list of a key-value pair $\langle g^{i}, i\rangle$ ($i\in\left\{0,\ldots,255\right\}$) and sort by the key's regular order. In this case, the $log_{g}$ operation can be computed within $\Theta(log_{n})$.
+\end{enumerate}
+
+Taking into vectoring computation into consideration, we also make the choice by heavily relying on vectoring operations (mainly $N$-dimensional arrays) from \textsf{NumPy} package. Although there is no exact evidence that these operations utilize parallelizing instructions provided by the CPU, we believe there must have been some optimizations for parallelism internally.
+
+With all these optimizations, we largely alleviate the performance bottleneck. As a result, for a 3276800-byte data chunk with $N_d=6$, our RAID6 write is finished within $17.52$s and the read operation (with check) is finished within $1.72$s; while with the corresponding RAID-4 write/read operations takes $7.80$s and $0.78$ respectively. We also use an unoptimized implementation of galois field multiplication provided by BitVector package\footnote{\url{https://engineering.purdue.edu/kak/dist/BitVector-3.3.2.html}} and run it against a 4096-byte data block and the corresponding write/read time is 25.4s/23.8s. This indicates that the optimization is really beneficial.
+
 
 \subsection{Other RAID implementations}
 

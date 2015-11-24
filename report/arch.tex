@@ -3,7 +3,7 @@
 In this section, we will discuss the basic features in RAID 6, the block level striping with double distributed parity architecture.
 
 \subsection{Two Fault Drive Tolerance}
-Unlike other RAID architectures, which only allow one drive falls happen at a time, RAID 6 can tolerate two drives break down at the same time. To achieve this, RAID 6 will calculate two parity blocks for a chunk of given data. The first parity block, named $P$ block, is the ``exclusive or'' ($\oplus$) for all the data block. 
+Unlike other RAID architectures, which only allow one drive falls happen at a time, RAID 6 can tolerate two drives break down at the same time. To achieve this, RAID 6 will calculate two parity blocks for a chunk of given data. The first parity block, named $P$ block, is  ``exclusive or'' ($\oplus$) for all the data block. 
 
 \begin{equation}\label{eq:gen_p}
 	\mathbf{P = D_0 \oplus D_1 \oplus D_2 \oplus \ldots \oplus D_{n-1}}

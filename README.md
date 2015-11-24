@@ -1,23 +1,26 @@
-data types  
+data types
 - text
 - binary
 
-operations  
+operations
 - read --> check
 - write
-- recover
+- recover <=2 disks
+- detect 1 corrupted disk
 
-predefined  
+predefined
 - dir locations + files
 - N stripes + 2 parities
 
-requirements  
-x find which disk is corrupted
-x recover 2-disk case
-x mutable files
+requirements
+- find which disk is corrupted
+- recover 2-disk case
+- mutable files
 
-evaluation
-x comparison with RAID5
+Additional Features:
+- RAID4 and RAID5
+- concurrent actual read/write
+- optimized and raw gf8 multiplication
 
 TODO:
 - unittest
