@@ -8,6 +8,7 @@ import utils
 from gf import GF
 from log_helper import init_logger, get_logger
 from raid import RAID
+import os
 
 
 # noinspection PyPep8Naming
@@ -167,7 +168,10 @@ class RAID6(RAID):
         # Dx
         first = utils.gf_a_multiply_list(A, utils.gf_1darray_add(P, Pxy))
         second = utils.gf_a_multiply_list(B, utils.gf_1darray_add(Q, Qxy))
-        Dx = utils.gf_1darray_add(np.array(first, dtype=config.BYTE_TYPE), np.array(second, dtype=config.BYTE_TYPE))
+        Dx = utils.gf_1darray_add(
+            np.array(
+                first, dtype=config.BYTE_TYPE), np.array(
+                second, dtype=config.BYTE_TYPE))
         Dx_content = self._1darray_to_str(Dx)
         x_fpath = self.get_real_name(x, fname)
         utils.write_content(x_fpath, Dx_content)
@@ -190,7 +194,7 @@ class RAID6(RAID):
         Q = byte_ndarray[-1:]
         # Dx
         Qx = utils.gen_q(DD, ndim=2)
-        g_x_inv = self.gf.generator[self.gf.circle - index]
+        g_x_inv = self.gf.generator[(self.gf.circle - index) % self.gf.circle]
         ###
         _add_list = utils.gf_1darray_add(Q, Qx)
         Dx_list = utils.gf_a_multiply_list(g_x_inv, _add_list)
@@ -221,18 +225,75 @@ class RAID6(RAID):
         self._write_n(fname, write_ndarray, self.N)
 
 
+def test_from_data_file(r6):
+    import driver
+
+    def _corrupt(fname, index, size):
+        error_fpath = r6.get_real_name(index, fname)
+        error_content = os.urandom(size)
+        utils.write_content(error_fpath, error_content)
+
+    def _corrupt2(fname, indexes, size):
+        for index in indexes:
+            _corrupt(fname, index, size)
+
+    data_fname = 'data3'
+    SIZE = 32768
+    driver.gen_rnd_file(data_fname, SIZE, 'text')
+    fpath = os.path.join(config.root, 'data3')
+    original_content = utils.read_content(fpath)
+    r6.write(original_content, data_fname)
+    r6.detect_corruption(data_fname)
+    for error_index in [0, 3, r6.N - 2, r6.N - 1]:
+        get_logger().warning("corrupting disk {}".format(error_index)) 
+        error_size = SIZE / 13
+        _corrupt(data_fname, error_index, error_size)
+        found_error_index = r6.detect_corruption(data_fname)
+        if found_error_index is not None:
+            get_logger().warning("recover disk {}".format(error_index)) 
+            assert found_error_index == error_index
+            if found_error_index < r6.N - 1:
+                r6.recover_d_or_p(data_fname, found_error_index)
+            else:
+                r6.recover_q(data_fname)
+            r6.detect_corruption(data_fname)
+#####################################################
+    get_logger().warning("testing recover_d_p") 
+    error_indexes = [4, r6.N - 1]
+    size = SIZE / 3
+    _corrupt2(data_fname, error_indexes, size)
+    r6.recover_d_p(data_fname, error_indexes[0])
+    r6.detect_corruption(data_fname)
+#####################################################
+    get_logger().warning("testing recover_2d") 
+    error_indexes = [0, 1]
+    size = SIZE / 5
+    _corrupt2(data_fname, error_indexes, size)
+    r6.recover_2d(data_fname, error_indexes[0], error_indexes[1])
+    r6.detect_corruption(data_fname)
+#####################################################
+    get_logger().warning("testing recover_d_p") 
+    error_indexes = [0, r6.N - 2]
+    size = SIZE / r6.N - 2
+    _corrupt2(data_fname, error_indexes, size)
+    r6.recover_d_p(data_fname, error_indexes[0])
+    r6.detect_corruption(data_fname)
+    
+
+
+def test_from_content(r6):
+    original_content = b'good_morning\x03_sir_yes\x01\x02'
+    # original_content = b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
+    # data_fname = 'my.dat'
+    # r6.recover_d_or_p(data_fname, error_index)
+    # r6.recover_d_p(data_fname, 1)
+    # r6.recover_2d(data_fname, 0, 1)
+    # r6_content = r6.read(data_fname, len(original_content))
+    # assert r6_content == original_content
+    r6.detect_corruption(data_fname)
+
 if __name__ == '__main__':
     # utils.simple_test(RAID6, False)
     init_logger()
     r6 = RAID6(8)
-    original_content = b'good_morning\x03_sir_yes\x01\x02'
-    # original_content = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
-    data_fname = 'my.dat'
-    r6.write(original_content, data_fname)
-    error_index = 0
-    r6.recover_d_or_p(data_fname, error_index)
-    r6.recover_d_p(data_fname, 1)
-    r6.recover_2d(data_fname, 0, 1)
-    r6_content = r6.read(data_fname, len(original_content))
-    assert r6_content == original_content
-    r6.detect_corruption(data_fname)
+    test_from_data_file(r6)

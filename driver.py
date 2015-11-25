@@ -32,6 +32,7 @@ def gen_rnd_file(fname, size, content_type):
         if file_size == size:
             get_logger().warning('fname={} with size={} exists'.format(fname, size))
             return
+    get_logger().warning('generating fname={} with size={}'.format(fname, size))
     utils.write_content(fpath, content)
 
 
@@ -58,16 +59,16 @@ if __name__ == '__main__':
         with open(fpath, 'rb') as fh:
             content = fh.read()
         for raid_type in [RAID4, RAID5, RAID6]:
-            raid = raid_type(8)
+            raid = raid_type(10)
             start_time = time.time()
             raid.write(content, fname)
-            print("{:10.4f}s during 'write' for raid={} against data={}".format(
-                time.time() - start_time, raid.__class__.__name__, fname))
+            print("{:10.4f}s during 'write' for raid={} against data={}, size={}".format(
+                time.time() - start_time, raid.__class__.__name__, fname, SIZE))
             size = len(content)
             start_time = time.time()
             content_raid = raid.read(fname, size)
-            print("{:10.4f}s during 'read'  for raid={} against data={}".format(
-                time.time() - start_time, raid.__class__.__name__, fname))
+            print("{:10.4f}s during 'read'  for raid={} against data={}, size={}".format(
+                time.time() - start_time, raid.__class__.__name__, fname, SIZE))
             assert content == content_raid
             # error_index = 2
             # raid.recover(fname, error_index)
