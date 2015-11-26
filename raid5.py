@@ -26,12 +26,12 @@ class RAID5(RAID4):
         :param byte_ndarray:
         :return:
         """
-        get_logger().info('before\n{}'.format(byte_ndarray))
+        # get_logger().info('before\n{}'.format(byte_ndarray))
         for i in xrange(self.N - 1):
             j = self.get_parity_index(i)
             get_logger().info('{}, {}'.format(byte_ndarray[i][j], byte_ndarray[self.N - 1][j]))
             byte_ndarray[i][j], byte_ndarray[self.N - 1][j] = byte_ndarray[self.N - 1][j], byte_ndarray[i][j]
-        get_logger().info('after\n{}'.format(byte_ndarray))
+        # get_logger().info('after\n{}'.format(byte_ndarray))
         return byte_ndarray
 
     def __init__(self, N):

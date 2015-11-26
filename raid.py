@@ -79,7 +79,7 @@ class RAID(object):
         #         fpath = self.get_real_name(i, fname)
         #         content_list.append(utils.read_content(fpath))
         ######
-        get_logger().info(content_list)
+        # get_logger().info(content_list)
         length = len(sorted(content_list, key=len, reverse=True)[0])
         # list of bytes (int) list
         byte_list = []
@@ -88,7 +88,7 @@ class RAID(object):
             byte_list.append(current_str_list)
         # bytes array
         byte_nparray = np.array(byte_list, dtype=self.BYTE_TYPE)
-        get_logger().info(byte_nparray)
+        # get_logger().info(byte_nparray)
         return byte_nparray
 
     def _gen_ndarray_from_content(self, content, num):

@@ -28,8 +28,8 @@ class GF(object):
 
     def multiply(self, p1, p2):
         """Multiply two polynomials in GF(2^N)/g(x)
-        :param p2: multiplier
         :param p1: multipler
+        :param p2: multiplier
         """
         p = 0
         while p2:

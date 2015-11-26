@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+import os
+
 import numpy as np
 
 import config
@@ -8,7 +10,6 @@ import utils
 from gf import GF
 from log_helper import init_logger, get_logger
 from raid import RAID
-import os
 
 
 # noinspection PyPep8Naming
@@ -229,6 +230,7 @@ def test_from_data_file(r6):
     import driver
 
     def _corrupt(fname, index, size):
+        get_logger().warning("corrupting disk {}".format(index))
         error_fpath = r6.get_real_name(index, fname)
         error_content = os.urandom(size)
         utils.write_content(error_fpath, error_content)
@@ -245,46 +247,46 @@ def test_from_data_file(r6):
     r6.write(original_content, data_fname)
     r6.detect_corruption(data_fname)
     for error_index in [0, 3, r6.N - 2, r6.N - 1]:
-        get_logger().warning("corrupting disk {}".format(error_index)) 
         error_size = SIZE / 13
         _corrupt(data_fname, error_index, error_size)
         found_error_index = r6.detect_corruption(data_fname)
         if found_error_index is not None:
-            get_logger().warning("recover disk {}".format(error_index)) 
+            get_logger().warning("recover disk {}".format(error_index))
             assert found_error_index == error_index
             if found_error_index < r6.N - 1:
                 r6.recover_d_or_p(data_fname, found_error_index)
             else:
                 r6.recover_q(data_fname)
             r6.detect_corruption(data_fname)
-#####################################################
-    get_logger().warning("testing recover_d_p") 
+    #####################################################
+    get_logger().warning("testing recover_d_q")
     error_indexes = [4, r6.N - 1]
-    size = SIZE / 3
+    size = SIZE / (r6.N - 4)
     _corrupt2(data_fname, error_indexes, size)
-    r6.recover_d_p(data_fname, error_indexes[0])
+    r6.recover_d_q(data_fname, error_indexes[0])
     r6.detect_corruption(data_fname)
-#####################################################
-    get_logger().warning("testing recover_2d") 
+    #####################################################
+    get_logger().warning("testing recover_2d")
     error_indexes = [0, 1]
-    size = SIZE / 5
+    size = SIZE / (r6.N + 2)
     _corrupt2(data_fname, error_indexes, size)
     r6.recover_2d(data_fname, error_indexes[0], error_indexes[1])
     r6.detect_corruption(data_fname)
-#####################################################
-    get_logger().warning("testing recover_d_p") 
+    #####################################################
+    get_logger().warning("testing recover_d_p")
     error_indexes = [0, r6.N - 2]
-    size = SIZE / r6.N - 2
+    size = SIZE / (r6.N - 2)
     _corrupt2(data_fname, error_indexes, size)
     r6.recover_d_p(data_fname, error_indexes[0])
     r6.detect_corruption(data_fname)
-    
 
 
 def test_from_content(r6):
-    original_content = b'good_morning\x03_sir_yes\x01\x02'
+    get_logger().warning("testing from content")
+    original_content = b'good_morning\x03_sir_yes_great\x01\x02'
     # original_content = b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13'
-    # data_fname = 'my.dat'
+    data_fname = 'my.dat'
+    # r6.write(original_content, data_fname)
     # r6.recover_d_or_p(data_fname, error_index)
     # r6.recover_d_p(data_fname, 1)
     # r6.recover_2d(data_fname, 0, 1)
@@ -292,8 +294,10 @@ def test_from_content(r6):
     # assert r6_content == original_content
     r6.detect_corruption(data_fname)
 
+
 if __name__ == '__main__':
     # utils.simple_test(RAID6, False)
     init_logger()
-    r6 = RAID6(8)
+    r6 = RAID6(10)
     test_from_data_file(r6)
+    # test_from_content(r6)
