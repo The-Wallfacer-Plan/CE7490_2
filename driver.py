@@ -54,7 +54,8 @@ N_DISK = 8
 if __name__ == '__main__':
     init_logger()
     starter()
-    for fname in ['data1', 'data2']:
+    # for fname in ['data1', 'data2']:
+    for fname in ['doge.png']:
         fpath = os.path.join(config.root, fname)
         with open(fpath, 'rb') as fh:
             content = fh.read()

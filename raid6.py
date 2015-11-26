@@ -299,5 +299,7 @@ if __name__ == '__main__':
     # utils.simple_test(RAID6, False)
     init_logger()
     r6 = RAID6(10)
-    test_from_data_file(r6)
+    # test_from_data_file(r6)
     # test_from_content(r6)
+    data_name = "doge.png"
+    r6.recover_d_p(data_name, 3)
