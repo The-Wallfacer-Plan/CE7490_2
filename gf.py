@@ -20,7 +20,7 @@ class GF(object):
         self.mask1 = 1 << self.N
         self.mask2 = self.mask1 - 1
         self.polyred = reduce(lambda x, y: (x << 1) + y, self.i2P(self.modulus)[1:])
-        # circle in GF^N, 255 in GF^8
+        # circle in GF2^N, 255 in GF2^8
         self.circle = 2 ** self.N - 1
         # the generator look up table
         if 'generator' not in self.__dict__:
@@ -56,17 +56,30 @@ class GF(object):
                 break
             res = self.multiply(res, base)
         assert len(self.generator) == self.circle
+        self._sort_gen()
         for g in self.generator:
             get_logger().info('{:0{width}{base}}'.format(g, base='x', width=2))
 
+    # def log_generator(self, result):
+    #     """
+    #     log_g operation
+    #     """
+    #     assert isinstance(result, int)
+    #     for i in range(self.circle):
+    #         if self.generator[i] == result:
+    #             return i
+    #     raise ValueError("should be included in table")
+
+    def _sort_gen(self):
+        gen_list = []
+        for i, generator in enumerate(self.generator):
+            gen_list.append((generator, i))
+        sorted_gen_index = sorted(gen_list, key=lambda ele: ele[0])
+        self.sorted_index = [ele[1] for ele in sorted_gen_index]
+        get_logger().info(self.sorted_index)
+
     def log_generator(self, result):
-        """
-        log_g operation
-        """
-        assert isinstance(result, int)
-        for i in range(self.circle):
-            if self.generator[i] == result:
-                return i
+        return self.sorted_index[result - 1]
 
     def Axy(self, x, y):
         """
